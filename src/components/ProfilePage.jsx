@@ -126,6 +126,7 @@ function PagesCard({ customPages, onNewPage, onDeleteCustomPage }) {
 
 function CreatorStatsCard({ stat }) {
   return (
+    <div className="grid grid-cols-[200px] gap-6">
     <div className="rounded-lg p-6 bg-panel border border-line">
       <div className="font-mono font-semibold text-sm text-cyan mb-5">
         Creator Stats
@@ -152,6 +153,7 @@ function CreatorStatsCard({ stat }) {
           <span>{stats.githubRepos}</span>
         </div>
       </div>
+    </div>
     </div>
   );
 }
@@ -208,8 +210,8 @@ function save() {
         </div>
       </header>
 
-      <section className="px-6 md:px-10 py-10 max-w-5xl">
-        <div className="grid lg:grid-cols-2 gap-6 items-stretch">
+      <section className="px-6 md:px-10 py-10 w-full">
+        <div className="grid lg:grid-cols-[500px_3fr_500px] gap-6 items-start">
           <div className="flex flex-col gap-6">
             <PlayerProfileCard
               profileImage={profileImage}
@@ -365,7 +367,7 @@ function save() {
             )}
           </div>
 
-<div className="grid md:grid-cols-2 gap-6">
+<div className="grid grid-cols-[750px_3fr_500px] gap-6">
           <div className="rounded-lg p-6 bg-panel border border-line">
             <StickerSheet stickers={stickers} setStickers={setStickers} authed={authed} />
           </div>
