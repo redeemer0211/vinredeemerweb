@@ -327,10 +327,7 @@ function save() {
               </div>
             ) : (
               <div className="rounded-lg p-6 bg-panel border border-line">
-                <div className="mb-6">
-                  <div className="font-display text-lg mb-1">{profile.nickname || "—"}</div>
-                  <div className="font-mono text-sm text-txd">{profile.alias || "No alias set"}</div>
-                </div>
+
 
                 <p className="text-lg text-txd mb-6 whitespace-pre-wrap">
                   {profile.bio || (authed ? 'No bio yet — click "Edit about me" to add one.' : "")}
@@ -367,7 +364,7 @@ function save() {
             )}
           </div>
 
-<div className="grid grid-cols-[750px_3fr_500px] gap-6">
+<div className="grid grid-cols-[705px_3fr_500px] gap-6">
           <div className="rounded-lg p-6 bg-panel border border-line">
             <StickerSheet stickers={stickers} setStickers={setStickers} authed={authed} />
           </div>
