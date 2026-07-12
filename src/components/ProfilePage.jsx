@@ -4,6 +4,7 @@ import Btn from "./Btn.jsx";
 import Field, { inputClass } from "./Field.jsx";
 import StickerSheet from "./StickerSheet.jsx";
 import { safeHref, safeImageSrc } from "../lib/sanitize.js";
+import { stats } from "../data/seed.js";
 
 function PlayerProfileCard({ profileImage, setProfileImage, heroDesc, setHeroDesc, authed }) {
   const [editingPhoto, setEditingPhoto] = useState(false);
@@ -123,18 +124,70 @@ function PagesCard({ customPages, onNewPage, onDeleteCustomPage }) {
   );
 }
 
+function CreatorStatsCard({ stat }) {
+  return (
+    <div className="rounded-lg p-6 bg-panel border border-line">
+      <div className="font-mono font-semibold text-sm text-cyan mb-5">
+        Creator Stats
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex justify-between">
+          <span>YouTube</span>
+          <span>{stats.youtube}</span>
+        </div>
+
+        <div className="flex justify-between">
+          <span>Facebook</span>
+          <span>{stats.facebook}</span>
+        </div>
+
+        <div className="flex justify-between">
+          <span>TikTok</span>
+          <span>{stats.tiktok}</span>
+        </div>
+
+        <div className="flex justify-between">
+          <span>GitHub</span>
+          <span>{stats.githubRepos}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 export default function ProfilePage({
-  profile, setProfile, profileImage, setProfileImage, heroDesc, setHeroDesc,
-  stickers, setStickers, customPages, onNewPage, onDeleteCustomPage, authed,
+  profile,
+  setProfile,
+  profileImage,
+  setProfileImage,
+  heroDesc,
+  setHeroDesc,
+  stickers,
+  setStickers,
+  customPages,
+  onNewPage,
+  onDeleteCustomPage,
+  authed,
+  stats,
+  setStats,
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(profile);
+  const [draftStats, setDraftStats] = useState(stats);
 
   function startEdit() { setDraft(profile); setEditing(true); }
-  function save() {
-    setProfile({ ...draft, links: draft.links.filter((l) => l.label.trim() && l.url.trim()) });
-    setEditing(false);
-  }
+function save() {
+  setProfile({
+    ...draft,
+    links: draft.links.filter((l) => l.label.trim() && l.url.trim())
+  });
+
+  setStats(draftStats);
+
+  setEditing(false);
+}
   function addLink() { setDraft((d) => ({ ...d, links: [...d.links, { id: Date.now().toString(36), label: "", url: "" }] })); }
   function updateLink(id, field, value) { setDraft((d) => ({ ...d, links: d.links.map((l) => (l.id === id ? { ...l, [field]: value } : l)) })); }
   function removeLink(id) { setDraft((d) => ({ ...d, links: d.links.filter((l) => l.id !== id) })); }
@@ -188,6 +241,68 @@ export default function ProfilePage({
                     <input className={inputClass} value={draft.tiktok} onChange={(e) => setDraft({ ...draft, tiktok: e.target.value })} placeholder="https://tiktok.com/@…" />
                   </Field>
                 </div>
+
+                <div className="mt-6">
+  <div className="font-mono font-semibold text-sm mb-4 text-cyan">
+    Creator Stats
+  </div>
+
+  <div className="grid sm:grid-cols-2 gap-4">
+
+    <Field label="YouTube Subscribers">
+      <input
+        className={inputClass}
+        value={draftStats.youtube}
+        onChange={(e)=>
+          setDraftStats({
+            ...draftStats,
+            youtube: e.target.value
+          })
+        }
+      />
+    </Field>
+
+    <Field label="Facebook Followers">
+      <input
+        className={inputClass}
+        value={draftStats.facebook}
+        onChange={(e)=>
+          setDraftStats({
+            ...draftStats,
+            facebook: e.target.value
+          })
+        }
+      />
+    </Field>
+
+    <Field label="TikTok Followers">
+      <input
+        className={inputClass}
+        value={draftStats.tiktok}
+        onChange={(e)=>
+          setDraftStats({
+            ...draftStats,
+            tiktok: e.target.value
+          })
+        }
+      />
+    </Field>
+
+    <Field label="GitHub Repositories">
+      <input
+        className={inputClass}
+        value={draftStats.githubRepos}
+        onChange={(e)=>
+          setDraftStats({
+            ...draftStats,
+            githubRepos: e.target.value
+          })
+        }
+      />
+    </Field>
+
+  </div>
+</div>
 
                 <div className="mt-2 mb-3 font-mono text-xs uppercase tracking-wide text-txd">Other webapps / links</div>
                 {draft.links.map((l) => (
@@ -250,9 +365,14 @@ export default function ProfilePage({
             )}
           </div>
 
+<div className="grid md:grid-cols-2 gap-6">
           <div className="rounded-lg p-6 bg-panel border border-line">
             <StickerSheet stickers={stickers} setStickers={setStickers} authed={authed} />
           </div>
+
+          <CreatorStatsCard stats={stats} />
+
+        </div>
         </div>
 
         {authed && (

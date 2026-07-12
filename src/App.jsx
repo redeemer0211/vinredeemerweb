@@ -9,7 +9,8 @@ import LoginModal from "./components/LoginModal.jsx";
 import NewPageModal from "./components/NewPageModal.jsx";
 import { isAuthed, clearSession } from "./lib/auth.js";
 import { loadList, saveList, loadValue, saveValue } from "./lib/storage.js";
-import { seedGames, seedVideos, seedMerch, seedStickers, defaultProfile, defaultHeroDesc } from "./data/seed.js";
+import { seedGames, seedVideos, seedMerch, seedStickers, defaultProfile, defaultHeroDesc, stats } from "./data/seed.js";
+import { stats as defaultStats } from "./data/seed.js";
 
 const BUILTIN_PAGE_IDS = ["home", "games", "videos", "merch", "profile"];
 
@@ -29,6 +30,7 @@ export default function App() {
   const [heroDesc, setHeroDesc] = useState(() => loadValue("vr_hero_desc", defaultHeroDesc));
   const [customPages, setCustomPages] = useState(() => loadList("vr_custom_pages"));
   const [customData, setCustomData] = useState(() => loadValue("vr_custom_pages_data", {}));
+  const [stats, setStats] = useState(defaultStats);
 
   useEffect(() => saveList("vr_games", games), [games]);
   useEffect(() => saveList("vr_videos", videos), [videos]);
@@ -118,6 +120,8 @@ export default function App() {
           onNewPage={() => setNewPageOpen(true)}
           onDeleteCustomPage={deleteCustomPage}
           authed={authed}
+          stats={stats}
+          setStats={setStats}
         />
       )}
 

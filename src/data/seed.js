@@ -43,6 +43,17 @@ export const seedMerch = [
   },
 ];
 
+//editable stats for socials following (not automated)
+export const stats = 
+  {
+  youtube: "2.3K",
+  facebook: "8.1K",
+  tiktok: "5.4K",
+  githubRepos: "43",
+  githubFollowers: "128",
+  discord: "Online"
+};
+
 // Generic placeholder chibi stickers — not a personalized likeness, just a
 // starting sheet so the page isn't empty. Swap these for your own art.
 export const seedStickers = [
