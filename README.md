@@ -39,21 +39,23 @@ src/
   index.css              Tailwind directives + a few custom effect classes
   components/
     Navbar.jsx              centered nav: logo left, pages centered, admin controls right
-    Hero.jsx                 read-only "about me" section — photo/description edited on Profile
+    Hero.jsx                 read-only "about me" section + social icons — all edited on Profile
     LoginModal.jsx            admin sign-in, opened from the navbar's Login button
-    NewPageModal.jsx           admin "+ Page" — create a page from a template
-    GamesPage.jsx               game cards — click through to videos by tag
-    VideosPage.jsx               video cards + YouTube sync — also reused for custom "Videos" pages
+    NewPageModal.jsx           "New page" form, opened from Profile's Pages card
+    GamesPage.jsx               game cards — tags/genres, filter bar, click through to videos
+    VideosPage.jsx               video cards + genre filter + YouTube sync — reused for custom "Videos" pages
+    GenreFilterBar.jsx            Any/Soulslike/FPS/RPG filter pills, shared by Games + Videos
     YouTubeSync.jsx               admin panel that pulls your uploads playlist into Videos
     GenericCardsPage.jsx          reusable card grid — powers Merch + custom "Cards" pages
-    ProfilePage.jsx                nickname/alias/bio, hero photo/description, links, sticker sheet
+    ProfilePage.jsx                nickname/alias/bio, hero photo/description, links, sticker sheet, pages
     StickerSheet.jsx                embeddable sticker grid used inside Profile
     Pagination.jsx                   shared Prev/Next pager (Videos + Sticker sheet)
     Btn.jsx / Field.jsx             small shared UI pieces
   lib/
-    auth.js                 hashed credential check + session handling
+    auth.js                 salted + peppered credential hash check + session handling
     youtube.js               YouTube URL → video ID parsing (single video links)
     youtubeApi.js             YouTube Data API v3 client — channel lookup + uploads playlist paging
+    genres.js                  the Any/Soulslike/FPS/RPG filter list + matching helper
     storage.js                 localStorage read/write helpers
     sanitize.js                 URL validation — blocks javascript:/data: links from becoming clickable
   data/
@@ -70,16 +72,17 @@ nav, mobile menu, or anywhere a visitor would stumble onto it. Worth
 knowing: like everything else in this client-only site, that's a UI
 choice, not a hard security boundary — see the Security section below.
 
-**Admin-created:** click **"+ Page"** in the centered nav (visible only
-when signed in) to add more, from two templates:
+**Admin-created:** from the Profile page's **Pages** card (see below), add
+more from two templates:
 - **Cards** — an image/title/description grid with optional price + buy link
   (same shape as Merchandise). Good for anything catalog-like.
 - **Videos** — a YouTube-embed grid (same shape as Videos, minus the sync panel).
 
-New pages show up in the nav immediately, for everyone. Only the admin can
-add/remove items on them or delete the page itself (✕ next to its nav
-link). There isn't a page template for Home/Hero — a second hero wouldn't
-make sense on one site — but Cards and Videos cover most other cases.
+New pages show up in the public nav immediately, for everyone — only
+managing them (creating/deleting) is hidden inside Profile along with
+everything else admin-only. There isn't a page template for Home/Hero — a
+second hero wouldn't make sense on one site — but Cards and Videos cover
+most other cases.
 
 ## Editing your photo, description, and profile
 
@@ -87,21 +90,26 @@ All of it lives on the **Profile page** — sign in, click the gear icon
 next to Log out, then Profile:
 - **Player Profile card**: your circular hero photo (upload or URL) and
   the Hero section's description text.
-- **Sticker sheet card**, right next to it (see below).
-- **About me card** below both: nickname, alias, bio, YouTube/TikTok, and
-  any other links (Discord, Twitch, another webapp — whatever you want listed).
+- **About me card**, stacked right below it, same width: nickname, alias,
+  bio, YouTube/TikTok, and any other links (Discord, Twitch, another
+  webapp — whatever you want listed). These same YouTube/TikTok/other
+  links now also show up as small icon buttons in the **Hero section**
+  on Home — configure them once here, they show up there automatically.
+- **Sticker sheet card**, next to those two, matched to their combined height.
+- **Pages card**, below everything — create or delete custom pages (see above).
 
 The Home page's Hero section just displays whatever's set here — it has
 no edit controls of its own.
 
 ## Stickers
 
-The sticker sheet sits as its own card right next to Player Profile on
-the (hidden, admin-only-findable) Profile page — it's meant as a personal
-asset library (forum replies, loading screens, wherever you need a quick
-image link) rather than a public gallery. Every sticker has a **"Copy"**
-button that copies its image URL to your clipboard. It shows **10 at a
-time** with Prev/Next paging underneath once you have more than that.
+The sticker sheet sits as its own card next to Player Profile / About Me
+on the (hidden, admin-only-findable) Profile page — it's meant as a
+personal asset library (forum replies, loading screens, wherever you need
+a quick image link) rather than a public gallery. Every sticker has a
+**"Copy"** button that copies its image URL to your clipboard. It shows
+in a fixed **5-column grid, 10 at a time**, with Prev/Next paging
+underneath once you have more than that.
 
 It ships with 8 generic placeholder chibi icons (`public/stickers/*.svg`)
 so it isn't empty — flat vector placeholders, not a generated likeness of
@@ -110,19 +118,28 @@ art of yourself, use an image generator (Midjourney, DALL·E, Ideogram,
 etc.) or a commissioned artist, then upload the results via "+ Add
 sticker" while signed in — URL or file upload both work.
 
-## Games: tags/genres and editing existing cards
+## Games: tags/genres, editing existing cards, and filtering
 
-Each game card can now carry any number of tags — genre, playstyle,
-whatever ("Soulslike", "FPS", "Co-op", "100%'d") — added one at a time in
-the add/edit form and shown as small pills on the card. Existing cards
-are editable too: the pencil icon next to the ✕ on each card reopens the
-same form pre-filled, for title, image, description, or tags.
+Each game card can carry any number of tags — genre, playstyle, whatever
+("Soulslike", "FPS", "Co-op", "100%'d") — added one at a time in the
+add/edit form and shown as small pills on the card. Existing cards are
+editable too: the pencil icon next to the ✕ on each card reopens the same
+form pre-filled, for title, image, description, or tags.
+
+Both the Games and Videos pages now show a filter bar — **Any / Soulslike
+/ FPS / RPG** — above the grid. On Games it filters directly by each
+card's tags. Videos don't carry their own tags; instead a video inherits
+its game's tags by matching its "Game tag" field to a game's title, so
+you only have to tag genres once, on Games. (Custom "Videos" template
+pages skip the filter bar entirely, since they aren't tied to a specific
+game.) Want different categories than Soulslike/FPS/RPG? Edit
+`GENRE_FILTERS` in `src/lib/genres.js` — everything else adapts automatically.
 
 ## Videos: paging
 
 Videos show **10 per page** with Prev/Next controls underneath, so the
 grid doesn't turn into an endless scroll as you add more. Filtering by a
-game tag (from the Games page) resets back to page 1.
+game tag (from the Games page) or by genre resets back to page 1.
 
 ## Pulling your videos from YouTube
 
@@ -146,27 +163,40 @@ since it's a real app running in a real browser, not a sandboxed artifact.
 
 ## Changing your login
 
-Same approach as the HTML version: only a SHA-256 hash of `email:password`
-is stored, in `src/lib/auth.js` as `CRED_HASH`. To change it, run this in
-any browser console:
+The credential hash is now **salted and peppered**, not just a plain
+SHA-256 of `email:password` — see `src/lib/auth.js` for the full
+explanation of what that actually buys you in a client-only app (short
+version: the salt is a real improvement against precomputed rainbow
+tables; the "pepper" can't be a true secret here since this file ships to
+every visitor's browser, so treat it as a second fixed salt rather than
+something an attacker can't see).
+
+To change your email or password, run this in any browser console —
+note the format now includes the salt and pepper:
 
 ```js
 async function hash(s){
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
   return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
-await hash('youremail@example.com:YourNewPassword');
+const SALT = 'f3a9c1e7b2d84f6a9c0e1b7d3a5f8c2e';   // must match src/lib/auth.js
+const PEPPER = 'VIN_REDEEMER_PEPPER_2026';           // must match src/lib/auth.js
+await hash(`${SALT}:youremail@example.com:YourNewPassword:${PEPPER}`);
 ```
 
-Paste the result into `CRED_HASH` in `src/lib/auth.js`.
+Paste the result into `CRED_HASH` in `src/lib/auth.js`. If you also want
+to change `SALT` or `PEPPER` themselves (fine to do, there's nothing
+special about the current values), update them in `auth.js` too and
+recompute the hash with the new values.
 
 ## Editing your info
 
 Almost everything is editable on the site itself while signed in — Hero
-photo/description, Profile, Games, Videos, Merch, Stickers, and custom
-pages. The only things still in code:
+photo/description/social links (via Profile), Profile, Games, Videos,
+Merch, Stickers, and custom pages. The only things still in code:
 - **Hero heading** ("Hey, I'm Vin...") — `src/components/Hero.jsx`
 - **Default YouTube channel link** — `DEFAULT_CHANNEL_URL` at the top of `src/components/VideosPage.jsx`
+- **Genre filter categories** — `GENRE_FILTERS` in `src/lib/genres.js`
 - **Theme colors/fonts** — `tailwind.config.js`
 
 ## Security — what's real, what isn't

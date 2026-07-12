@@ -2,7 +2,9 @@ import { useRef, useState } from "react";
 import { Plus, X, ChevronRight, Pencil } from "lucide-react";
 import Btn from "./Btn.jsx";
 import Field, { inputClass } from "./Field.jsx";
+import GenreFilterBar from "./GenreFilterBar.jsx";
 import { safeImageSrc } from "../lib/sanitize.js";
+import { matchesGenre } from "../lib/genres.js";
 
 function emptyDraft() {
   return { title: "", imageUrl: "", desc: "", genres: [], genreInput: "" };
@@ -13,7 +15,9 @@ export default function GamesPage({ games, setGames, gotoVideosForTag, authed })
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState(emptyDraft());
   const [error, setError] = useState("");
+  const [genreFilter, setGenreFilter] = useState("Any");
   const fileRef = useRef(null);
+  const filteredGames = games.filter((g) => matchesGenre(g.genres, genreFilter));
 
   function openAddForm() {
     setEditingId(null);
@@ -144,13 +148,19 @@ export default function GamesPage({ games, setGames, gotoVideosForTag, authed })
           </form>
         )}
 
+        {games.length > 0 && <GenreFilterBar value={genreFilter} onChange={setGenreFilter} />}
+
         {games.length === 0 ? (
           <div className="text-center py-16 rounded border border-dashed border-lineb text-txd font-mono text-sm">
             No games yet. Hit "+ Add game" to load your first cartridge.
           </div>
+        ) : filteredGames.length === 0 ? (
+          <div className="text-center py-16 rounded border border-dashed border-lineb text-txd font-mono text-sm">
+            No games tagged "{genreFilter}" yet.
+          </div>
         ) : (
           <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(270px, 1fr))" }}>
-            {games.map((g) => {
+            {filteredGames.map((g) => {
               const img = safeImageSrc(g.image);
               return (
                 <div key={g.id} className="group relative rounded overflow-hidden flex flex-col bg-panel border border-line transition hover:border-cyan hover:-translate-y-1 hover:shadow-glow-cyan">

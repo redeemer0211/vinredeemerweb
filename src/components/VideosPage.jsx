@@ -3,8 +3,10 @@ import { Plus, X, Youtube } from "lucide-react";
 import Btn from "./Btn.jsx";
 import Field, { inputClass } from "./Field.jsx";
 import Pagination from "./Pagination.jsx";
+import GenreFilterBar from "./GenreFilterBar.jsx";
 import { parseYouTubeId } from "../lib/youtube.js";
 import { safeHref } from "../lib/sanitize.js";
+import { matchesGenre } from "../lib/genres.js";
 import YouTubeSync from "./YouTubeSync.jsx";
 
 const DEFAULT_CHANNEL_URL = "https://www.youtube.com/@vin_redeemer"; // ← edit to your channel
@@ -17,6 +19,8 @@ export default function VideosPage({
   channelUrl = DEFAULT_CHANNEL_URL,
   showChannelLink = true,
   showSync = true,
+  games = [],
+  showGenreFilter = true,
 }) {
   const [formOpen, setFormOpen] = useState(false);
   const [vTitle, setVTitle] = useState("");
@@ -25,15 +29,27 @@ export default function VideosPage({
   const [desc, setDesc] = useState("");
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
+  const [genreFilter, setGenreFilter] = useState("Any");
 
-  const visible = activeTag
+  // Videos don't carry their own genres — they inherit them from the game
+  // they're tagged with (matched by title), so genre tagging only has to
+  // happen once, on the Games page.
+  const genresByGameName = new Map(
+    games.map((g) => [(g.tag || g.title || "").toLowerCase(), g.genres || []])
+  );
+
+  const tagFiltered = activeTag
     ? videos.filter((v) => (v.tag || "").toLowerCase() === activeTag.toLowerCase())
     : videos;
+
+  const visible = showGenreFilter
+    ? tagFiltered.filter((v) => matchesGenre(genresByGameName.get((v.tag || "").toLowerCase()), genreFilter))
+    : tagFiltered;
 
   const totalPages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
   const pageItems = visible.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  useEffect(() => { setPage(1); }, [activeTag]);
+  useEffect(() => { setPage(1); setGenreFilter("Any"); }, [activeTag]);
   useEffect(() => { if (page > totalPages) setPage(totalPages); }, [totalPages, page]);
 
   function resetForm() {
@@ -116,9 +132,19 @@ export default function VideosPage({
           </form>
         )}
 
+        {showGenreFilter && videos.length > 0 && (
+          <GenreFilterBar value={genreFilter} onChange={setGenreFilter} />
+        )}
+
         {visible.length === 0 ? (
           <div className="text-center py-16 rounded border border-dashed border-lineb text-txd font-mono text-sm">
-            {activeTag ? `No videos tagged "${activeTag}" yet.` : emptyText}
+            {activeTag && genreFilter !== "Any"
+              ? `No videos tagged "${activeTag}" match "${genreFilter}".`
+              : activeTag
+              ? `No videos tagged "${activeTag}" yet.`
+              : genreFilter !== "Any"
+              ? `No videos tagged "${genreFilter}" yet.`
+              : emptyText}
           </div>
         ) : (
           <>

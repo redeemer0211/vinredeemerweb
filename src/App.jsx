@@ -81,18 +81,16 @@ export default function App() {
         onLoginClick={() => setLoginOpen(true)}
         onLogout={logout}
         customPages={customPages}
-        onNewPage={() => setNewPageOpen(true)}
-        onDeleteCustomPage={deleteCustomPage}
       />
 
       {page === "home" && (
-        <Hero setPage={goto} profileImage={profileImage} heroDesc={heroDesc} />
+        <Hero setPage={goto} profileImage={profileImage} heroDesc={heroDesc} profile={profile} />
       )}
       {page === "games" && (
         <GamesPage games={games} setGames={setGames} gotoVideosForTag={gotoVideosForTag} authed={authed} />
       )}
       {page === "videos" && (
-        <VideosPage videos={videos} setVideos={setVideos} activeTag={activeTag} clearTag={() => setActiveTag(null)} authed={authed} />
+        <VideosPage videos={videos} setVideos={setVideos} activeTag={activeTag} clearTag={() => setActiveTag(null)} authed={authed} games={games} />
       )}
       {page === "merch" && (
         <GenericCardsPage
@@ -116,6 +114,9 @@ export default function App() {
           setHeroDesc={setHeroDesc}
           stickers={stickers}
           setStickers={setStickers}
+          customPages={customPages}
+          onNewPage={() => setNewPageOpen(true)}
+          onDeleteCustomPage={deleteCustomPage}
           authed={authed}
         />
       )}
@@ -134,6 +135,7 @@ export default function App() {
           title={activeCustomPage.label}
           showChannelLink={false}
           showSync={false}
+          showGenreFilter={false}
           videos={customData[activeCustomPage.id] || []}
           setVideos={setCustomItems(activeCustomPage.id)}
           activeTag={null}

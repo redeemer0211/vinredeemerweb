@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Pencil, Check, X as XIcon, Youtube, Music2, Link2, Plus, Trash2, Camera, User } from "lucide-react";
+import { Pencil, Check, X as XIcon, Youtube, Music2, Link2, Plus, Trash2, Camera, User, LayoutGrid } from "lucide-react";
 import Btn from "./Btn.jsx";
 import Field, { inputClass } from "./Field.jsx";
 import StickerSheet from "./StickerSheet.jsx";
@@ -86,7 +86,47 @@ function PlayerProfileCard({ profileImage, setProfileImage, heroDesc, setHeroDes
   );
 }
 
-export default function ProfilePage({ profile, setProfile, profileImage, setProfileImage, heroDesc, setHeroDesc, stickers, setStickers, authed }) {
+function PagesCard({ customPages, onNewPage, onDeleteCustomPage }) {
+  return (
+    <div className="rounded-lg p-6 bg-panel border border-line">
+      <div className="flex justify-between items-center mb-5">
+        <div>
+          <div className="font-mono font-semibold text-sm text-cyan">Pages</div>
+          <p className="font-mono text-xs text-txd mt-1">Add more pages to the site from a template.</p>
+        </div>
+        <Btn variant="primary" className="!px-3 !py-2 !text-[11px]" onClick={onNewPage}>
+          <Plus size={14} /> New page
+        </Btn>
+      </div>
+
+      {customPages.length === 0 ? (
+        <div className="text-center py-8 rounded border border-dashed border-lineb text-txd font-mono text-xs">
+          No custom pages yet — Games, Videos, Merch and Profile are always there; anything else you add shows up here.
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {customPages.map((p) => (
+            <div key={p.id} className="flex items-center justify-between px-4 py-3 rounded bg-raised border border-line">
+              <div className="flex items-center gap-2 font-mono text-sm">
+                {p.template === "videos" ? <Youtube size={13} className="text-txf" /> : <LayoutGrid size={13} className="text-txf" />}
+                {p.label}
+                <span className="font-mono text-[9px] px-1.5 py-0.5 rounded-full border border-lineb text-txf uppercase">{p.template}</span>
+              </div>
+              <button onClick={() => onDeleteCustomPage(p.id)} className="w-7 h-7 rounded border border-lineb text-txf hover:text-mag hover:border-mag flex items-center justify-center" aria-label={`Delete ${p.label}`}>
+                <XIcon size={13} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function ProfilePage({
+  profile, setProfile, profileImage, setProfileImage, heroDesc, setHeroDesc,
+  stickers, setStickers, customPages, onNewPage, onDeleteCustomPage, authed,
+}) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(profile);
 
@@ -214,6 +254,12 @@ export default function ProfilePage({ profile, setProfile, profileImage, setProf
             <StickerSheet stickers={stickers} setStickers={setStickers} authed={authed} />
           </div>
         </div>
+
+        {authed && (
+          <div className="mt-6">
+            <PagesCard customPages={customPages} onNewPage={onNewPage} onDeleteCustomPage={onDeleteCustomPage} />
+          </div>
+        )}
       </section>
     </>
   );

@@ -1,9 +1,14 @@
-import { Gamepad2, Play, User } from "lucide-react";
+import { Gamepad2, Play, User, Youtube, Music2, Link2 } from "lucide-react";
 import Btn from "./Btn.jsx";
-import { safeImageSrc } from "../lib/sanitize.js";
+import { safeImageSrc, safeHref } from "../lib/sanitize.js";
 
-export default function Hero({ setPage, profileImage, heroDesc }) {
+export default function Hero({ setPage, profileImage, heroDesc, profile }) {
   const cleanImage = safeImageSrc(profileImage);
+  const socialLinks = [
+    ...(profile?.youtube ? [{ id: "youtube", label: "YouTube", url: profile.youtube, Icon: Youtube }] : []),
+    ...(profile?.tiktok ? [{ id: "tiktok", label: "TikTok", url: profile.tiktok, Icon: Music2 }] : []),
+    ...((profile?.links || []).map((l) => ({ id: l.id, label: l.label, url: l.url, Icon: Link2 }))),
+  ].filter((s) => safeHref(s.url));
 
   return (
     <section className="relative overflow-hidden px-6 md:px-10 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-center border-b border-line">
@@ -16,7 +21,7 @@ export default function Hero({ setPage, profileImage, heroDesc }) {
           I play the games, then I post the runs worth watching.
         </h1>
         <p className="mb-8 max-w-md text-lg text-txd">{heroDesc}</p>
-        <div className="flex gap-4 flex-wrap">
+        <div className="flex gap-4 flex-wrap mb-6">
           <Btn variant="primary" onClick={() => setPage("games")}>
             <Gamepad2 size={16} /> View my games
           </Btn>
@@ -24,6 +29,17 @@ export default function Hero({ setPage, profileImage, heroDesc }) {
             <Play size={16} /> Watch videos
           </Btn>
         </div>
+
+        {socialLinks.length > 0 && (
+          <div className="flex flex-wrap gap-3">
+            {socialLinks.map((s) => (
+              <a key={s.id} href={safeHref(s.url)} target="_blank" rel="noopener noreferrer" title={s.label}
+                className="w-9 h-9 flex items-center justify-center rounded-full border border-lineb text-txd hover:text-cyan hover:border-cyan transition">
+                <s.Icon size={15} />
+              </a>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="relative aspect-square max-w-sm mx-auto rounded-full overflow-hidden bg-panel border border-lineb shadow-[0_20px_60px_rgba(0,0,0,0.5)]">

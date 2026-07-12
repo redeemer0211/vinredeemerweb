@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { LogOut, Menu, Lock, ShieldCheck, Plus, X, Settings, User } from "lucide-react";
+import { LogOut, Menu, Lock, ShieldCheck, Settings, User } from "lucide-react";
 
 const BUILTIN_LINKS = [
   { id: "home", label: "Home" },
@@ -8,11 +8,11 @@ const BUILTIN_LINKS = [
   { id: "merch", label: "Merch", badge: "BETA" },
 ];
 
-export default function Navbar({ page, setPage, authed, onLoginClick, onLogout, customPages, onNewPage, onDeleteCustomPage }) {
+export default function Navbar({ page, setPage, authed, onLoginClick, onLogout, customPages }) {
   const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef(null);
-  const links = [...BUILTIN_LINKS, ...customPages.map((p) => ({ id: p.id, label: p.label, custom: true }))];
+  const links = [...BUILTIN_LINKS, ...customPages.map((p) => ({ id: p.id, label: p.label }))];
 
   useEffect(() => {
     function onClickOutside(e) {
@@ -30,7 +30,7 @@ export default function Navbar({ page, setPage, authed, onLoginClick, onLogout, 
 
       <ul className="hidden md:flex items-center gap-6 flex-wrap justify-self-center">
         {links.map((l) => (
-          <li key={l.id} className="flex items-center gap-1">
+          <li key={l.id}>
             <button
               onClick={() => setPage(l.id)}
               className={`nav-link font-mono text-sm uppercase tracking-wide pb-1 flex items-center gap-1.5 ${
@@ -40,20 +40,8 @@ export default function Navbar({ page, setPage, authed, onLoginClick, onLogout, 
               {l.label}
               {l.badge && <span className="font-mono text-[9px] px-1.5 py-0.5 rounded-full border border-gold text-gold">{l.badge}</span>}
             </button>
-            {authed && l.custom && (
-              <button onClick={() => onDeleteCustomPage(l.id)} className="text-txf hover:text-mag" aria-label={`Delete ${l.label} page`}>
-                <X size={11} />
-              </button>
-            )}
           </li>
         ))}
-        {authed && (
-          <li>
-            <button onClick={onNewPage} className="flex items-center gap-1 font-mono text-sm uppercase tracking-wide text-cyan">
-              <Plus size={14} /> Page
-            </button>
-          </li>
-        )}
       </ul>
 
       <div className="hidden md:flex items-center justify-self-end shrink-0">
@@ -118,28 +106,16 @@ export default function Navbar({ page, setPage, authed, onLoginClick, onLogout, 
       {open && (
         <ul className="md:hidden col-span-3 absolute top-full left-0 right-0 flex flex-col bg-panel border-b border-line max-h-[70vh] overflow-y-auto">
           {links.map((l) => (
-            <li key={l.id} className="flex items-center">
+            <li key={l.id}>
               <button
                 onClick={() => { setPage(l.id); setOpen(false); }}
-                className={`flex-1 text-left px-6 py-4 font-mono text-sm uppercase flex items-center gap-2 ${page === l.id ? "text-gray-100" : "text-txd"}`}
+                className={`w-full text-left px-6 py-4 font-mono text-sm uppercase flex items-center gap-2 ${page === l.id ? "text-gray-100" : "text-txd"}`}
               >
                 {l.label}
                 {l.badge && <span className="font-mono text-[9px] px-1.5 py-0.5 rounded-full border border-gold text-gold">{l.badge}</span>}
               </button>
-              {authed && l.custom && (
-                <button onClick={() => onDeleteCustomPage(l.id)} className="px-4 text-txf hover:text-mag" aria-label={`Delete ${l.label} page`}>
-                  <X size={14} />
-                </button>
-              )}
             </li>
           ))}
-          {authed && (
-            <li>
-              <button onClick={() => { onNewPage(); setOpen(false); }} className="w-full text-left px-6 py-4 font-mono text-sm uppercase text-cyan flex items-center gap-2">
-                <Plus size={14} /> New page
-              </button>
-            </li>
-          )}
           {authed && (
             <li>
               <button onClick={() => { setPage("profile"); setOpen(false); }} className="w-full text-left px-6 py-4 font-mono text-sm uppercase text-txd flex items-center gap-2">
