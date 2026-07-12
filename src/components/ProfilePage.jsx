@@ -364,7 +364,7 @@ function save() {
             )}
           </div>
 
-<div className="grid grid-cols-[705px_3fr_500px] gap-6">
+<div className="grid grid-cols-[900px_3fr_500px] gap-6">
           <div className="rounded-lg p-6 bg-panel border border-line">
             <StickerSheet stickers={stickers} setStickers={setStickers} authed={authed} />
           </div>
