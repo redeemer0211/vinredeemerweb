@@ -1,0 +1,18 @@
+<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="120" cy="120" r="116" fill="#0d1117" stroke="#ffffff" stroke-width="6"/>
+  <!-- body -->
+  <path d="M60 235 Q60 165 120 160 Q180 165 180 235 Z" fill="#ff3d7f"/>
+  <rect x="82" y="188" width="76" height="34" rx="10" fill="#1b2432" stroke="#000" stroke-width="2"/><circle cx="98" cy="205" r="6" fill="#35e6e0"/><circle cx="150" cy="199" r="5" fill="#ff3d7f"/><circle cx="162" cy="205" r="5" fill="#ffb703"/><rect x="112" y="199" width="16" height="5" fill="#0d1117"/><rect x="117" y="194" width="5" height="16" fill="#0d1117"/>
+  <!-- neck -->
+  <rect x="104" y="140" width="32" height="24" rx="8" fill="#f0c9a0"/>
+  <!-- head -->
+  <circle cx="120" cy="108" r="58" fill="#f0c9a0"/>
+  <!-- hair -->
+  <path d="M62 100 Q58 40 120 34 Q182 40 178 100 Q178 60 150 52 Q160 78 140 66 Q142 86 118 68 Q112 90 96 70 Q92 92 74 78 Q70 92 62 100 Z" fill="#241f2b"/>
+  <!-- glasses -->
+  <circle cx="98" cy="112" r="20" fill="none" stroke="#1a1a1a" stroke-width="4"/>
+  <circle cx="142" cy="112" r="20" fill="none" stroke="#1a1a1a" stroke-width="4"/>
+  <line x1="118" y1="110" x2="122" y2="110" stroke="#1a1a1a" stroke-width="4"/>
+  <path d="M90 105 Q98 98 106 105" fill="none" stroke="#1a1a1a" stroke-width="3.5" stroke-linecap="round"/><path d="M134 105 Q142 98 150 105" fill="none" stroke="#1a1a1a" stroke-width="3.5" stroke-linecap="round"/><circle cx="120" cy="132" r="6" fill="#1a1a1a"/>
+  
+</svg>

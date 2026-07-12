@@ -1,0 +1,223 @@
+# VIN_REDEEMER (React + Tailwind)
+
+A real, runnable React project — the same gamer HUD/terminal site as the
+plain HTML version, rebuilt as components with Tailwind utility classes.
+
+**The site itself is public.** Anyone can view Home, Games, and Videos.
+A "Login" button sits in the top-right of the navbar; clicking it opens a
+modal. Only correct credentials unlock **admin mode** — that's what shows
+the "+ Add game" / "+ Add video" buttons and the ✕ remove buttons on
+cards. Everyone else just sees your content, read-only.
+
+## Run it
+
+```bash
+npm install
+npm run dev
+```
+
+Then open the local URL it prints (usually `http://localhost:5173`).
+
+To build for deployment:
+```bash
+npm run build
+```
+This outputs a static `dist/` folder you can host anywhere (Netlify,
+Vercel, Cloudflare Pages, GitHub Pages).
+
+## Project layout
+
+```
+index.html              Vite entry HTML, loads the Google Fonts
+public/
+  _headers               Netlify security headers (CSP, etc.) — applied on deploy, not in dev
+  stickers/                8 placeholder chibi SVGs seeded into the sticker sheet
+vercel.json              same headers, Vercel's format — delete whichever host you're not using
+src/
+  main.jsx               mounts <App />
+  App.jsx                page switching + persistence + the custom-page system
+  index.css              Tailwind directives + a few custom effect classes
+  components/
+    Navbar.jsx              centered nav: logo left, pages centered, admin controls right
+    Hero.jsx                 read-only "about me" section — photo/description edited on Profile
+    LoginModal.jsx            admin sign-in, opened from the navbar's Login button
+    NewPageModal.jsx           admin "+ Page" — create a page from a template
+    GamesPage.jsx               game cards — click through to videos by tag
+    VideosPage.jsx               video cards + YouTube sync — also reused for custom "Videos" pages
+    YouTubeSync.jsx               admin panel that pulls your uploads playlist into Videos
+    GenericCardsPage.jsx          reusable card grid — powers Merch + custom "Cards" pages
+    ProfilePage.jsx                nickname/alias/bio, hero photo/description, links, sticker sheet
+    StickerSheet.jsx                embeddable sticker grid used inside Profile
+    Pagination.jsx                   shared Prev/Next pager (Videos + Sticker sheet)
+    Btn.jsx / Field.jsx             small shared UI pieces
+  lib/
+    auth.js                 hashed credential check + session handling
+    youtube.js               YouTube URL → video ID parsing (single video links)
+    youtubeApi.js             YouTube Data API v3 client — channel lookup + uploads playlist paging
+    storage.js                 localStorage read/write helpers
+    sanitize.js                 URL validation — blocks javascript:/data: links from becoming clickable
+  data/
+    seed.js                    starter content for games/videos/merch/stickers/profile
+tailwind.config.js         theme: colors, fonts, glow shadows
+```
+
+## Pages
+
+**Public, in the centered nav:** Home, Games, Videos, Merchandise (beta).
+**Profile is hidden from visitors** — it only shows up for you, via the
+gear icon next to Log out (top right, once signed in). It's not in the
+nav, mobile menu, or anywhere a visitor would stumble onto it. Worth
+knowing: like everything else in this client-only site, that's a UI
+choice, not a hard security boundary — see the Security section below.
+
+**Admin-created:** click **"+ Page"** in the centered nav (visible only
+when signed in) to add more, from two templates:
+- **Cards** — an image/title/description grid with optional price + buy link
+  (same shape as Merchandise). Good for anything catalog-like.
+- **Videos** — a YouTube-embed grid (same shape as Videos, minus the sync panel).
+
+New pages show up in the nav immediately, for everyone. Only the admin can
+add/remove items on them or delete the page itself (✕ next to its nav
+link). There isn't a page template for Home/Hero — a second hero wouldn't
+make sense on one site — but Cards and Videos cover most other cases.
+
+## Editing your photo, description, and profile
+
+All of it lives on the **Profile page** — sign in, click the gear icon
+next to Log out, then Profile:
+- **Player Profile card**: your circular hero photo (upload or URL) and
+  the Hero section's description text.
+- **Sticker sheet card**, right next to it (see below).
+- **About me card** below both: nickname, alias, bio, YouTube/TikTok, and
+  any other links (Discord, Twitch, another webapp — whatever you want listed).
+
+The Home page's Hero section just displays whatever's set here — it has
+no edit controls of its own.
+
+## Stickers
+
+The sticker sheet sits as its own card right next to Player Profile on
+the (hidden, admin-only-findable) Profile page — it's meant as a personal
+asset library (forum replies, loading screens, wherever you need a quick
+image link) rather than a public gallery. Every sticker has a **"Copy"**
+button that copies its image URL to your clipboard. It shows **10 at a
+time** with Prev/Next paging underneath once you have more than that.
+
+It ships with 8 generic placeholder chibi icons (`public/stickers/*.svg`)
+so it isn't empty — flat vector placeholders, not a generated likeness of
+you. There's no image-generation step in this project; to get real chibi
+art of yourself, use an image generator (Midjourney, DALL·E, Ideogram,
+etc.) or a commissioned artist, then upload the results via "+ Add
+sticker" while signed in — URL or file upload both work.
+
+## Games: tags/genres and editing existing cards
+
+Each game card can now carry any number of tags — genre, playstyle,
+whatever ("Soulslike", "FPS", "Co-op", "100%'d") — added one at a time in
+the add/edit form and shown as small pills on the card. Existing cards
+are editable too: the pencil icon next to the ✕ on each card reopens the
+same form pre-filled, for title, image, description, or tags.
+
+## Videos: paging
+
+Videos show **10 per page** with Prev/Next controls underneath, so the
+grid doesn't turn into an endless scroll as you add more. Filtering by a
+game tag (from the Games page) resets back to page 1.
+
+## Pulling your videos from YouTube
+
+On the Videos page, signed in, open **"Sync from YouTube"**. You'll need:
+- A **YouTube Data API v3 key** — Google Cloud Console → APIs & Services →
+  Credentials → Create Credentials → API key, with "YouTube Data API v3"
+  enabled on that project. Free, no credit card. Restrict the key by HTTP
+  referrer to your domain once deployed, so it can't be used from anywhere else.
+- Your **channel handle** (the `@name` from your channel URL) or channel ID.
+
+Hit "Sync now" and it pulls your uploads playlist directly — cheap reads
+(`channels.list` + `playlistItems.list`, 1 unit each), not the expensive
+`search.list` endpoint. Already-added videos are skipped automatically by
+matching video IDs, so you can re-sync any time to pick up new uploads.
+The key is stored only in your browser's local storage and used straight
+from your own session — it's never part of the site's public code.
+
+Unlike the chat preview, this version **persists your games, videos,
+profile photo, and everything else in the browser's local storage**,
+since it's a real app running in a real browser, not a sandboxed artifact.
+
+## Changing your login
+
+Same approach as the HTML version: only a SHA-256 hash of `email:password`
+is stored, in `src/lib/auth.js` as `CRED_HASH`. To change it, run this in
+any browser console:
+
+```js
+async function hash(s){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+await hash('youremail@example.com:YourNewPassword');
+```
+
+Paste the result into `CRED_HASH` in `src/lib/auth.js`.
+
+## Editing your info
+
+Almost everything is editable on the site itself while signed in — Hero
+photo/description, Profile, Games, Videos, Merch, Stickers, and custom
+pages. The only things still in code:
+- **Hero heading** ("Hey, I'm Vin...") — `src/components/Hero.jsx`
+- **Default YouTube channel link** — `DEFAULT_CHANNEL_URL` at the top of `src/components/VideosPage.jsx`
+- **Theme colors/fonts** — `tailwind.config.js`
+
+## Security — what's real, what isn't
+
+**What this project actually does:**
+- **Link/script injection is blocked.** Any URL that ends up as a clickable
+  link or image (video links, cover images, your profile photo) is checked
+  in `src/lib/sanitize.js` before it's ever rendered. Only real `http(s)`
+  links and `data:image/...` uploads are allowed — a `javascript:...` value
+  typed into any field will not execute.
+- **A Content-Security-Policy is set at the hosting level** (`public/_headers`
+  for Netlify, `vercel.json` for Vercel) — this tells the *browser itself*
+  to refuse to run inline scripts, load frames from anywhere but YouTube,
+  or load images from unexpected origins, even if something slipped past
+  the app's own checks. This only applies once deployed, not in `npm run dev`.
+- **Text content is auto-escaped.** React escapes everything rendered via
+  `{...}` by default (nothing in this codebase bypasses that with
+  `dangerouslySetInnerHTML`), so a game description or video title can't
+  inject HTML/scripts either.
+- **Admin actions require a valid session**, so a visitor can't add, edit,
+  or delete your cards without your password.
+- **Production builds are minified** (`npm run build`) — variable and
+  function names get shortened and the code is bundled, which makes
+  casually reading the source meaningfully more tedious. It does not make
+  it unreadable to someone who actually wants to.
+
+**What isn't possible, for any website:**
+- **Hiding your page's content from "Inspect Element."** A browser has to
+  download your HTML/CSS/JS to display the page at all, which means that
+  code is sitting in the visitor's browser the whole time. There is no
+  setting, obfuscation trick, or library that changes this — it's true of
+  every site on the internet, including banks. Right-click-blocking and
+  DevTools-key-blocking scripts exist, but they don't stop DevTools from
+  opening (there are several ways around both that don't involve a
+  keyboard shortcut), and they make the site harder to use for legitimate
+  visitors, including anyone relying on screen readers or browser
+  extensions. This project disables right-click **only on images**, as a
+  light "no casual save-as" nudge — it's cosmetic, not security, and you
+  can delete that `useEffect` in `App.jsx` if it ever gets in the way.
+
+## ⚠️ On the login being "secure"
+
+Worth repeating from the HTML version: this is still a client-side-only
+check. The password isn't stored in plain text, and failed logins get
+routed to a 404-style screen without saying which field was wrong — but
+because the check runs in the visitor's own browser, someone determined
+could read the hash out of the built JS and try to crack it, or just strip
+the check out of a build they control. That's true of any login without a
+server behind it.
+
+This is a solid "keep it off Google, keep casual visitors out" gate for a
+personal project. For anything that really needs to stay locked down,
+you'd want a real backend or an auth provider (Netlify Identity, Firebase
+Auth, Cloudflare Access) validating requests server-side.
