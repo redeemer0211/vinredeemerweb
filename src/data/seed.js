@@ -5,6 +5,7 @@ export const seedGames = [
     image: "",
     tag: "Elden Ring",
     desc: "Currently on a no-summons Malenia run.",
+    genres: ["Soulslike", "RPG"],
   },
   {
     id: "g2",
@@ -12,6 +13,7 @@ export const seedGames = [
     image: "",
     tag: "Valorant",
     desc: "Climbing back to Immortal this split.",
+    genres: ["FPS"],
   },
 ];
 
@@ -43,17 +45,6 @@ export const seedMerch = [
   },
 ];
 
-//editable stats for socials following (not automated)
-export const stats = 
-  {
-  youtube: "2.3K",
-  facebook: "8.1K",
-  tiktok: "5.4K",
-  githubRepos: "43",
-  githubFollowers: "128",
-  discord: "Online"
-};
-
 // Generic placeholder chibi stickers — not a personalized likeness, just a
 // starting sheet so the page isn't empty. Swap these for your own art.
 export const seedStickers = [
@@ -68,13 +59,20 @@ export const seedStickers = [
 ];
 
 export const defaultProfile = {
-  nickname: "Vin",
-  alias: "Vin Redeemer",
-  bio: "Full-time gamer, part-time video editor. I play what I'm into, clip the good parts, and post them here.",
   youtube: "https://www.youtube.com/@vin_redeemer",
+  youtubeFollowers: "",
   tiktok: "",
-  links: [],
+  tiktokFollowers: "",
+  facebook: "",
+  facebookFollowers: "",
 };
 
 export const defaultHeroDesc =
   "This is where I keep the games I'm actually grinding right now and the gameplay I've cut together from them. Pick a game, jump to the clips — no algorithm, no clutter, just the stuff I made.";
+
+export const defaultAboutMe = {
+  hobbies: ["Photography", "Ramen hunting", "Building keyboards"],
+  games: ["Elden Ring", "Valorant"],
+  freeTime:
+    "When I'm not recording, I'm usually deep in a boss fight, scouting ramen spots, or tinkering with keyboard builds.",
+};

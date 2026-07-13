@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, X, Youtube } from "lucide-react";
+import { Plus, X, Youtube, Pencil } from "lucide-react";
 import Btn from "./Btn.jsx";
 import Field, { inputClass } from "./Field.jsx";
 import Pagination from "./Pagination.jsx";
@@ -7,10 +7,14 @@ import GenreFilterBar from "./GenreFilterBar.jsx";
 import { parseYouTubeId } from "../lib/youtube.js";
 import { safeHref } from "../lib/sanitize.js";
 import { matchesGenre } from "../lib/genres.js";
+import { useResponsiveValue } from "../lib/useViewport.js";
 import YouTubeSync from "./YouTubeSync.jsx";
 
 const DEFAULT_CHANNEL_URL = "https://www.youtube.com/@vin_redeemer"; // ← edit to your channel
-const PAGE_SIZE = 10;
+
+function emptyDraft() {
+  return { title: "", url: "", tag: "", desc: "", genres: [], genreInput: "" };
+}
 
 export default function VideosPage({
   videos, setVideos, activeTag, clearTag, authed,
@@ -23,27 +27,30 @@ export default function VideosPage({
   showGenreFilter = true,
 }) {
   const [formOpen, setFormOpen] = useState(false);
-  const [vTitle, setVTitle] = useState("");
-  const [url, setUrl] = useState("");
-  const [tag, setTag] = useState("");
-  const [desc, setDesc] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [draft, setDraft] = useState(emptyDraft());
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [genreFilter, setGenreFilter] = useState("Any");
+  const PAGE_SIZE = useResponsiveValue({ mobile: 4, tablet: 6, desktop: 10 });
 
-  // Videos don't carry their own genres — they inherit them from the game
-  // they're tagged with (matched by title), so genre tagging only has to
-  // happen once, on the Games page.
+  // A video's genres are its own tags, plus whatever genres are tagged on
+  // the game it's linked to (matched by title) — so you can tag a video
+  // directly, or just tag the game once and let its videos inherit it.
   const genresByGameName = new Map(
     games.map((g) => [(g.tag || g.title || "").toLowerCase(), g.genres || []])
   );
+  function effectiveGenres(v) {
+    const inherited = genresByGameName.get((v.tag || "").toLowerCase()) || [];
+    return [...new Set([...(v.genres || []), ...inherited])];
+  }
 
   const tagFiltered = activeTag
     ? videos.filter((v) => (v.tag || "").toLowerCase() === activeTag.toLowerCase())
     : videos;
 
   const visible = showGenreFilter
-    ? tagFiltered.filter((v) => matchesGenre(genresByGameName.get((v.tag || "").toLowerCase()), genreFilter))
+    ? tagFiltered.filter((v) => matchesGenre(effectiveGenres(v), genreFilter))
     : tagFiltered;
 
   const totalPages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
@@ -52,32 +59,66 @@ export default function VideosPage({
   useEffect(() => { setPage(1); setGenreFilter("Any"); }, [activeTag]);
   useEffect(() => { if (page > totalPages) setPage(totalPages); }, [totalPages, page]);
 
-  function resetForm() {
-    setVTitle(""); setUrl(""); setTag(""); setDesc(""); setError("");
+  function openAddForm() {
+    setEditingId(null);
+    setDraft(emptyDraft());
+    setError("");
+    setFormOpen(true);
+  }
+
+  function openEditForm(v) {
+    setEditingId(v.id);
+    setDraft({ title: v.title, url: v.url, tag: v.tag || "", desc: v.desc || "", genres: v.genres || [], genreInput: "" });
+    setError("");
+    setFormOpen(true);
+  }
+
+  function closeForm() {
+    setFormOpen(false);
+    setEditingId(null);
+    setDraft(emptyDraft());
+    setError("");
+  }
+
+  function addGenre() {
+    const g = draft.genreInput.trim();
+    if (!g) return;
+    if (draft.genres.some((x) => x.toLowerCase() === g.toLowerCase())) { setDraft((d) => ({ ...d, genreInput: "" })); return; }
+    setDraft((d) => ({ ...d, genres: [...d.genres, g], genreInput: "" }));
+  }
+  function removeGenre(g) {
+    setDraft((d) => ({ ...d, genres: d.genres.filter((x) => x !== g) }));
   }
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!vTitle.trim() || !url.trim()) {
+    if (!draft.title.trim() || !draft.url.trim()) {
       setError("A title and a YouTube link are both required.");
       return;
     }
-    if (!parseYouTubeId(url.trim())) {
+    if (!parseYouTubeId(draft.url.trim())) {
       setError("That doesn't look like an embeddable YouTube link.");
       return;
     }
-    setVideos((v) => [
-      { id: Date.now().toString(36), title: vTitle.trim(), url: url.trim(), tag: tag.trim(), desc: desc.trim() },
-      ...v,
-    ]);
-    resetForm();
-    setFormOpen(false);
+    if (editingId) {
+      setVideos((all) => all.map((v) => (
+        v.id === editingId
+          ? { ...v, title: draft.title.trim(), url: draft.url.trim(), tag: draft.tag.trim(), desc: draft.desc.trim(), genres: draft.genres }
+          : v
+      )));
+    } else {
+      setVideos((v) => [
+        { id: Date.now().toString(36), title: draft.title.trim(), url: draft.url.trim(), tag: draft.tag.trim(), desc: draft.desc.trim(), genres: draft.genres },
+        ...v,
+      ]);
+    }
+    closeForm();
     setPage(1);
   }
 
   return (
     <>
-      <header className="px-6 md:px-10 pt-14 pb-6 border-b border-line">
+      <header className="px-5 sm:px-8 md:px-10 pt-8 sm:pt-10 md:pt-14 pb-5 md:pb-6 border-b border-line">
         <div className="flex justify-between items-end gap-4 flex-wrap">
           <div>
             <h1 className="font-display text-lg mb-2">{title}</h1>
@@ -94,7 +135,7 @@ export default function VideosPage({
               </a>
             )}
             {authed && (
-              <Btn variant="primary" onClick={() => setFormOpen((o) => !o)}>
+              <Btn variant="primary" onClick={openAddForm}>
                 <Plus size={16} /> Add video
               </Btn>
             )}
@@ -107,27 +148,51 @@ export default function VideosPage({
         )}
       </header>
 
-      <section className="px-6 md:px-10 py-8">
+      <section className="px-5 sm:px-8 md:px-10 py-6 md:py-8">
         {authed && showSync && <YouTubeSync videos={videos} setVideos={setVideos} />}
         {authed && formOpen && (
           <form onSubmit={handleSubmit} className="rounded-lg p-6 mb-9 bg-panel border border-line">
-            <div className="font-mono font-semibold text-sm mb-4 text-cyan">New video</div>
+            <div className="font-mono font-semibold text-sm mb-4 text-cyan">{editingId ? "Edit video" : "New video"}</div>
             <Field label="Video title">
-              <input className={inputClass} value={vTitle} onChange={(e) => setVTitle(e.target.value)} placeholder="e.g. Malenia, no summons — finally" />
+              <input className={inputClass} value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="e.g. Malenia, no summons — finally" />
             </Field>
             <Field label="YouTube link">
-              <input className={inputClass} value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=…" />
+              <input className={inputClass} value={draft.url} onChange={(e) => setDraft({ ...draft, url: e.target.value })} placeholder="https://www.youtube.com/watch?v=…" />
             </Field>
-            <Field label="Game tag (optional)" hint="Match a game title exactly to link it from the Games page.">
-              <input className={inputClass} value={tag} onChange={(e) => setTag(e.target.value)} placeholder="e.g. Elden Ring" />
+            <Field label="Game tag (optional)" hint="Match a game title exactly to link it from the Games page — and inherit its genre tags.">
+              <input className={inputClass} value={draft.tag} onChange={(e) => setDraft({ ...draft, tag: e.target.value })} placeholder="e.g. Elden Ring" />
             </Field>
             <Field label="Description">
-              <textarea className={`${inputClass} min-h-[70px] resize-y`} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="What's happening in this one…" />
+              <textarea className={`${inputClass} min-h-[70px] resize-y`} value={draft.desc} onChange={(e) => setDraft({ ...draft, desc: e.target.value })} placeholder="What's happening in this one…" />
             </Field>
+
+            <Field label="Tags / genres" hint="e.g. Soulslike, FPS, RPG — press Enter or Add after each one. Optional if the game tag above already covers it.">
+              <div className="flex gap-2">
+                <input
+                  className={inputClass}
+                  value={draft.genreInput}
+                  onChange={(e) => setDraft({ ...draft, genreInput: e.target.value })}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addGenre(); } }}
+                  placeholder="Soulslike"
+                />
+                <Btn type="button" variant="ghost" className="!px-3 !py-2 !text-[11px]" onClick={addGenre}>Add</Btn>
+              </div>
+              {draft.genres.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {draft.genres.map((g) => (
+                    <span key={g} className="inline-flex items-center gap-1.5 font-mono text-[10px] px-2 py-1 rounded-full border border-mag-dim text-mag">
+                      {g}
+                      <button type="button" onClick={() => removeGenre(g)} aria-label={`Remove ${g}`}><X size={10} /></button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </Field>
+
             {error && <p className="font-mono text-xs mb-3 text-mag">{error}</p>}
             <div className="flex gap-3">
-              <Btn variant="primary" type="submit">Save video</Btn>
-              <Btn variant="ghost" type="button" onClick={() => { resetForm(); setFormOpen(false); }}>Cancel</Btn>
+              <Btn variant="primary" type="submit">{editingId ? "Save changes" : "Save video"}</Btn>
+              <Btn variant="ghost" type="button" onClick={closeForm}>Cancel</Btn>
             </div>
           </form>
         )}
@@ -174,12 +239,24 @@ export default function VideosPage({
                       <div className="flex justify-between items-start gap-2">
                         <div className="font-mono font-semibold">{v.title}</div>
                         {authed && (
-                          <button onClick={() => setVideos((all) => all.filter((x) => x.id !== v.id))} className="w-7 h-7 rounded border border-lineb text-txf hover:text-mag hover:border-mag flex items-center justify-center shrink-0" aria-label="Remove video">
-                            <X size={13} />
-                          </button>
+                          <div className="flex gap-1 shrink-0">
+                            <button onClick={() => openEditForm(v)} className="w-7 h-7 rounded border border-lineb text-txf hover:text-cyan hover:border-cyan flex items-center justify-center" aria-label="Edit video">
+                              <Pencil size={12} />
+                            </button>
+                            <button onClick={() => setVideos((all) => all.filter((x) => x.id !== v.id))} className="w-7 h-7 rounded border border-lineb text-txf hover:text-mag hover:border-mag flex items-center justify-center" aria-label="Remove video">
+                              <X size={13} />
+                            </button>
+                          </div>
                         )}
                       </div>
                       <p className="text-sm flex-1 text-txd">{v.desc}</p>
+                      {v.genres && v.genres.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {v.genres.map((genre) => (
+                            <span key={genre} className="font-mono text-[9px] px-2 py-0.5 rounded-full border border-mag-dim text-mag">{genre}</span>
+                          ))}
+                        </div>
+                      )}
                       <div className="flex justify-between items-center mt-1">
                         {v.tag ? (
                           <span className="font-mono text-[10px] px-2 py-1 rounded-full border border-cyan-dim text-cyan">{v.tag}</span>

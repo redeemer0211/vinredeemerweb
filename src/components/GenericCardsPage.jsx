@@ -51,7 +51,7 @@ export default function GenericCardsPage({
 
   return (
     <>
-      <header className="px-6 md:px-10 pt-14 pb-6 border-b border-line">
+      <header className="px-5 sm:px-8 md:px-10 pt-8 sm:pt-10 md:pt-14 pb-5 md:pb-6 border-b border-line">
         <div className="flex justify-between items-end gap-4 flex-wrap">
           <div>
             <span className="font-mono text-xs uppercase tracking-widest text-cyan">{eyebrow}</span>
@@ -71,7 +71,7 @@ export default function GenericCardsPage({
         </div>
       </header>
 
-      <section className="px-6 md:px-10 py-8">
+      <section className="px-5 sm:px-8 md:px-10 py-6 md:py-8">
         {authed && formOpen && (
           <form onSubmit={handleSubmit} className="rounded-lg p-6 mb-9 bg-panel border border-line">
             <div className="font-mono font-semibold text-sm mb-4 text-cyan">New item</div>
@@ -108,7 +108,7 @@ export default function GenericCardsPage({
         {items.length === 0 ? (
           <div className="text-center py-16 rounded border border-dashed border-lineb text-txd font-mono text-sm">{emptyText}</div>
         ) : (
-          <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))" }}>
+          <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))" }}>
             {items.map((it) => {
               const img = safeImageSrc(it.image);
               const href = safeHref(it.link);

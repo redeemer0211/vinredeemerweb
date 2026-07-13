@@ -1,10 +1,12 @@
 import { useRef, useState } from "react";
-import { Pencil, Check, X as XIcon, Youtube, Music2, Link2, Plus, Trash2, Camera, User, LayoutGrid } from "lucide-react";
+import {
+  Pencil, Check, X as XIcon, Youtube, Music2, Facebook, Plus,
+  Camera, User, LayoutGrid, ExternalLink,
+} from "lucide-react";
 import Btn from "./Btn.jsx";
 import Field, { inputClass } from "./Field.jsx";
 import StickerSheet from "./StickerSheet.jsx";
 import { safeHref, safeImageSrc } from "../lib/sanitize.js";
-import { stats } from "../data/seed.js";
 
 function PlayerProfileCard({ profileImage, setProfileImage, heroDesc, setHeroDesc, authed }) {
   const [editingPhoto, setEditingPhoto] = useState(false);
@@ -30,59 +32,246 @@ function PlayerProfileCard({ profileImage, setProfileImage, heroDesc, setHeroDes
   function saveDesc() { setHeroDesc(descDraft.trim() || heroDesc); setEditingDesc(false); }
 
   return (
-    <div className="rounded-lg p-6 bg-panel border border-line">
+    <div className="rounded-lg p-6 bg-panel border border-line h-full flex flex-col">
       <div className="font-mono font-semibold text-sm mb-5 text-cyan">Player Profile</div>
-      <div className="grid sm:grid-cols-[160px_1fr] gap-6">
-        <div>
-          <div className="relative w-full aspect-square rounded-full overflow-hidden bg-raised border border-lineb">
-            {cleanImage ? (
-              <img src={cleanImage} alt="Profile" className="w-full h-full object-cover" onContextMenu={(e) => e.preventDefault()} />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-dim/30 to-mag-dim/30">
-                <User size={32} className="text-txf" />
-              </div>
+      <div className="relative w-28 aspect-square rounded-full overflow-hidden bg-raised border border-lineb mx-auto">
+        {cleanImage ? (
+          <img src={cleanImage} alt="Profile" className="w-full h-full object-cover" onContextMenu={(e) => e.preventDefault()} />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-dim/30 to-mag-dim/30">
+            <User size={28} className="text-txf" />
+          </div>
+        )}
+      </div>
+      {authed && (
+        <button onClick={() => setEditingPhoto((o) => !o)} className="mt-3 w-full flex items-center justify-center gap-1.5 font-mono text-[11px] uppercase px-3 py-2 rounded border border-lineb hover:border-cyan">
+          <Camera size={12} /> Change photo
+        </button>
+      )}
+      {authed && editingPhoto && (
+        <div className="mt-3 p-3 rounded bg-raised border border-line">
+          <label className="block font-mono text-[10px] uppercase tracking-wide text-txd mb-1.5">Image URL</label>
+          <div className="flex gap-2 mb-2">
+            <input className={`${inputClass} !py-1.5 !text-sm`} value={urlInput} onChange={(e) => setUrlInput(e.target.value)} placeholder="https://…" />
+            <Btn variant="primary" className="!px-2 !py-1.5 !text-[10px]" onClick={commitUrl}>Set</Btn>
+          </div>
+          <label className="block font-mono text-[10px] uppercase tracking-wide text-txd mb-1.5">…or upload</label>
+          <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className={`${inputClass} !py-1.5 !text-sm`} />
+        </div>
+      )}
+
+      <div className="mt-5 flex-1">
+        <label className="block font-mono text-xs uppercase tracking-wide text-txd mb-2">Hero description</label>
+        {editingDesc ? (
+          <div>
+            <textarea className={`${inputClass} min-h-[100px] resize-y`} value={descDraft} onChange={(e) => setDescDraft(e.target.value)} />
+            <div className="flex gap-2 mt-2">
+              <Btn variant="primary" className="!px-3 !py-2 !text-[11px]" onClick={saveDesc}><Check size={13} /> Save</Btn>
+              <Btn variant="ghost" className="!px-3 !py-2 !text-[11px]" onClick={() => { setDescDraft(heroDesc); setEditingDesc(false); }}><XIcon size={13} /> Cancel</Btn>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <p className="text-sm text-txd">{heroDesc}</p>
+            {authed && (
+              <button onClick={() => { setDescDraft(heroDesc); setEditingDesc(true); }} className="mt-2 flex items-center gap-1.5 font-mono text-[11px] uppercase text-txf hover:text-cyan">
+                <Pencil size={11} /> Edit description
+              </button>
             )}
           </div>
-          {authed && (
-            <button onClick={() => setEditingPhoto((o) => !o)} className="mt-3 w-full flex items-center justify-center gap-1.5 font-mono text-[11px] uppercase px-3 py-2 rounded border border-lineb hover:border-cyan">
-              <Camera size={12} /> Change photo
-            </button>
-          )}
-          {authed && editingPhoto && (
-            <div className="mt-3 p-3 rounded bg-raised border border-line">
-              <label className="block font-mono text-[10px] uppercase tracking-wide text-txd mb-1.5">Image URL</label>
-              <div className="flex gap-2 mb-2">
-                <input className={`${inputClass} !py-1.5 !text-sm`} value={urlInput} onChange={(e) => setUrlInput(e.target.value)} placeholder="https://…" />
-                <Btn variant="primary" className="!px-2 !py-1.5 !text-[10px]" onClick={commitUrl}>Set</Btn>
-              </div>
-              <label className="block font-mono text-[10px] uppercase tracking-wide text-txd mb-1.5">…or upload</label>
-              <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className={`${inputClass} !py-1.5 !text-sm`} />
-            </div>
-          )}
-        </div>
-
-        <div>
-          <label className="block font-mono text-xs uppercase tracking-wide text-txd mb-2">Hero description</label>
-          {editingDesc ? (
-            <div>
-              <textarea className={`${inputClass} min-h-[100px] resize-y`} value={descDraft} onChange={(e) => setDescDraft(e.target.value)} />
-              <div className="flex gap-2 mt-2">
-                <Btn variant="primary" className="!px-3 !py-2 !text-[11px]" onClick={saveDesc}><Check size={13} /> Save</Btn>
-                <Btn variant="ghost" className="!px-3 !py-2 !text-[11px]" onClick={() => { setDescDraft(heroDesc); setEditingDesc(false); }}><XIcon size={13} /> Cancel</Btn>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <p className="text-base text-txd">{heroDesc}</p>
-              {authed && (
-                <button onClick={() => { setDescDraft(heroDesc); setEditingDesc(true); }} className="mt-2 flex items-center gap-1.5 font-mono text-[11px] uppercase text-txf hover:text-cyan">
-                  <Pencil size={11} /> Edit description
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+const SOCIAL_PLATFORMS = [
+  { key: "youtube", followersKey: "youtubeFollowers", label: "YouTube", Icon: Youtube, variant: "watch" },
+  { key: "tiktok", followersKey: "tiktokFollowers", label: "TikTok", Icon: Music2, variant: "ghost" },
+  { key: "facebook", followersKey: "facebookFollowers", label: "Facebook", Icon: Facebook, variant: "ghost" },
+];
+
+function SocialsCard({ profile, setProfile, authed }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(profile);
+
+  function startEdit() { setDraft(profile); setEditing(true); }
+  function save() { setProfile({ ...profile, ...draft }); setEditing(false); }
+
+  const activePlatforms = SOCIAL_PLATFORMS.filter((p) => safeHref(profile[p.key]));
+
+  return (
+    <div className="rounded-lg p-6 bg-panel border border-line h-full flex flex-col sm:col-span-2 lg:col-span-1">
+      <div className="flex justify-between items-start mb-5">
+        <div className="font-mono font-semibold text-sm text-cyan">Socials</div>
+        {authed && !editing && (
+          <button onClick={startEdit} className="w-7 h-7 rounded border border-lineb text-txf hover:text-cyan hover:border-cyan flex items-center justify-center" aria-label="Edit socials">
+            <Pencil size={12} />
+          </button>
+        )}
+      </div>
+
+      {editing ? (
+        <div className="flex-1 flex flex-col gap-4">
+          {SOCIAL_PLATFORMS.map((p) => (
+            <div key={p.key}>
+              <label className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide text-txd mb-1.5">
+                <p.Icon size={12} /> {p.label}
+              </label>
+              <input
+                className={`${inputClass} !py-2 !text-sm mb-1.5`}
+                value={draft[p.key] || ""}
+                onChange={(e) => setDraft({ ...draft, [p.key]: e.target.value })}
+                placeholder="https://…"
+              />
+              <input
+                className={`${inputClass} !py-2 !text-sm`}
+                value={draft[p.followersKey] || ""}
+                onChange={(e) => setDraft({ ...draft, [p.followersKey]: e.target.value })}
+                placeholder="Followers, e.g. 12.4K"
+              />
+            </div>
+          ))}
+          <div className="flex gap-3 mt-1">
+            <Btn variant="primary" className="!px-3 !py-2 !text-[11px]" onClick={save}><Check size={13} /> Save</Btn>
+            <Btn variant="ghost" className="!px-3 !py-2 !text-[11px]" onClick={() => setEditing(false)}><XIcon size={13} /> Cancel</Btn>
+          </div>
+        </div>
+      ) : activePlatforms.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center text-center py-8 rounded border border-dashed border-lineb text-txd font-mono text-xs">
+          {authed ? 'No socials yet — click the pencil to add them.' : 'Nothing here yet.'}
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col gap-3">
+          {activePlatforms.map((p) => (
+            <div key={p.key} className="flex items-center justify-between px-4 py-3 rounded bg-raised border border-line">
+              <div className="flex items-center gap-2.5">
+                <p.Icon size={15} className="text-txd" />
+                <div>
+                  <div className="font-mono text-xs">{p.label}</div>
+                  {profile[p.followersKey] && (
+                    <div className="font-mono text-[10px] text-txf">{profile[p.followersKey]} following</div>
+                  )}
+                </div>
+              </div>
+              <a href={safeHref(profile[p.key])} target="_blank" rel="noopener noreferrer">
+                <Btn variant={p.variant} className="!px-2.5 !py-1.5 !text-[10px]"><ExternalLink size={11} /> Visit</Btn>
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AboutMePageCard({ aboutMe, setAboutMe, authed }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(aboutMe);
+  const [hobbyInput, setHobbyInput] = useState("");
+  const [gameInput, setGameInput] = useState("");
+
+  function startEdit() { setDraft(aboutMe); setEditing(true); }
+  function save() { setAboutMe(draft); setEditing(false); }
+
+  function addTag(field, input, setInput) {
+    const v = input.trim();
+    if (!v) return;
+    if (draft[field].some((x) => x.toLowerCase() === v.toLowerCase())) { setInput(""); return; }
+    setDraft((d) => ({ ...d, [field]: [...d[field], v] }));
+    setInput("");
+  }
+  function removeTag(field, v) {
+    setDraft((d) => ({ ...d, [field]: d[field].filter((x) => x !== v) }));
+  }
+
+  return (
+    <div className="rounded-lg p-6 bg-panel border border-line">
+      <div className="flex justify-between items-center mb-5">
+        <div>
+          <div className="font-mono font-semibold text-sm text-cyan">About Me page</div>
+          <p className="font-mono text-xs text-txd mt-1">Hobbies, games you play, and what you do in your free time — shown on the public About page.</p>
+        </div>
+        {authed && !editing && (
+          <Btn variant="primary" className="!px-3 !py-2 !text-[11px]" onClick={startEdit}>
+            <Pencil size={13} /> Edit
+          </Btn>
+        )}
+      </div>
+
+      {editing ? (
+        <div>
+          <Field label="Hobbies" hint="Press Enter or Add after each one.">
+            <div className="flex gap-2">
+              <input
+                className={inputClass}
+                value={hobbyInput}
+                onChange={(e) => setHobbyInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag("hobbies", hobbyInput, setHobbyInput); } }}
+                placeholder="Photography"
+              />
+              <Btn type="button" variant="ghost" className="!px-3 !py-2 !text-[11px]" onClick={() => addTag("hobbies", hobbyInput, setHobbyInput)}>Add</Btn>
+            </div>
+            {draft.hobbies.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {draft.hobbies.map((h) => (
+                  <span key={h} className="inline-flex items-center gap-1.5 font-mono text-[10px] px-2 py-1 rounded-full border border-cyan-dim text-cyan">
+                    {h}
+                    <button type="button" onClick={() => removeTag("hobbies", h)} aria-label={`Remove ${h}`}><XIcon size={10} /></button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </Field>
+
+          <Field label="Games I play" hint="Press Enter or Add after each one.">
+            <div className="flex gap-2">
+              <input
+                className={inputClass}
+                value={gameInput}
+                onChange={(e) => setGameInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag("games", gameInput, setGameInput); } }}
+                placeholder="Elden Ring"
+              />
+              <Btn type="button" variant="ghost" className="!px-3 !py-2 !text-[11px]" onClick={() => addTag("games", gameInput, setGameInput)}>Add</Btn>
+            </div>
+            {draft.games.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {draft.games.map((g) => (
+                  <span key={g} className="inline-flex items-center gap-1.5 font-mono text-[10px] px-2 py-1 rounded-full border border-mag-dim text-mag">
+                    {g}
+                    <button type="button" onClick={() => removeTag("games", g)} aria-label={`Remove ${g}`}><XIcon size={10} /></button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </Field>
+
+          <Field label="What I do in my free time">
+            <textarea className={`${inputClass} min-h-[100px] resize-y`} value={draft.freeTime} onChange={(e) => setDraft({ ...draft, freeTime: e.target.value })} />
+          </Field>
+
+          <div className="flex gap-3">
+            <Btn variant="primary" onClick={save}><Check size={14} /> Save</Btn>
+            <Btn variant="ghost" onClick={() => setEditing(false)}><XIcon size={14} /> Cancel</Btn>
+          </div>
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-3 gap-4">
+          <div>
+            <div className="font-mono text-[11px] uppercase tracking-wide text-txf mb-2">Hobbies</div>
+            <p className="text-sm text-txd">{aboutMe.hobbies.length ? aboutMe.hobbies.join(", ") : "—"}</p>
+          </div>
+          <div>
+            <div className="font-mono text-[11px] uppercase tracking-wide text-txf mb-2">Games</div>
+            <p className="text-sm text-txd">{aboutMe.games.length ? aboutMe.games.join(", ") : "—"}</p>
+          </div>
+          <div>
+            <div className="font-mono text-[11px] uppercase tracking-wide text-txf mb-2">Free time</div>
+            <p className="text-sm text-txd">{aboutMe.freeTime || "—"}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -102,7 +291,7 @@ function PagesCard({ customPages, onNewPage, onDeleteCustomPage }) {
 
       {customPages.length === 0 ? (
         <div className="text-center py-8 rounded border border-dashed border-lineb text-txd font-mono text-xs">
-          No custom pages yet — Games, Videos, Merch and Profile are always there; anything else you add shows up here.
+          No custom pages yet — Games, Videos, Merch, About and Profile are always there; anything else you add shows up here.
         </div>
       ) : (
         <div className="flex flex-col gap-2">
@@ -124,260 +313,39 @@ function PagesCard({ customPages, onNewPage, onDeleteCustomPage }) {
   );
 }
 
-function CreatorStatsCard({ stat }) {
-  return (
-    <div className="grid grid-cols-[200px] gap-6">
-    <div className="rounded-lg p-6 bg-panel border border-line">
-      <div className="font-mono font-semibold text-sm text-cyan mb-5">
-        Creator Stats
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex justify-between">
-          <span>YouTube</span>
-          <span>{stats.youtube}</span>
-        </div>
-
-        <div className="flex justify-between">
-          <span>Facebook</span>
-          <span>{stats.facebook}</span>
-        </div>
-
-        <div className="flex justify-between">
-          <span>TikTok</span>
-          <span>{stats.tiktok}</span>
-        </div>
-
-        <div className="flex justify-between">
-          <span>GitHub</span>
-          <span>{stats.githubRepos}</span>
-        </div>
-      </div>
-    </div>
-    </div>
-  );
-}
-
-
 export default function ProfilePage({
-  profile,
-  setProfile,
-  profileImage,
-  setProfileImage,
-  heroDesc,
-  setHeroDesc,
-  stickers,
-  setStickers,
-  customPages,
-  onNewPage,
-  onDeleteCustomPage,
-  authed,
-  stats,
-  setStats,
+  profile, setProfile, profileImage, setProfileImage, heroDesc, setHeroDesc,
+  stickers, setStickers, aboutMe, setAboutMe,
+  customPages, onNewPage, onDeleteCustomPage, authed,
 }) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(profile);
-  const [draftStats, setDraftStats] = useState(stats);
-
-  function startEdit() { setDraft(profile); setEditing(true); }
-function save() {
-  setProfile({
-    ...draft,
-    links: draft.links.filter((l) => l.label.trim() && l.url.trim())
-  });
-
-  setStats(draftStats);
-
-  setEditing(false);
-}
-  function addLink() { setDraft((d) => ({ ...d, links: [...d.links, { id: Date.now().toString(36), label: "", url: "" }] })); }
-  function updateLink(id, field, value) { setDraft((d) => ({ ...d, links: d.links.map((l) => (l.id === id ? { ...l, [field]: value } : l)) })); }
-  function removeLink(id) { setDraft((d) => ({ ...d, links: d.links.filter((l) => l.id !== id) })); }
-
   return (
     <>
-      <header className="px-6 md:px-10 pt-14 pb-6 border-b border-line">
-        <div className="flex justify-between items-end gap-4 flex-wrap">
-          <div>
-            <h1 className="font-display text-lg mb-2">Profile</h1>
-            <p className="font-mono text-sm text-txd">Who's actually behind the cartridges.</p>
-          </div>
-          {authed && !editing && (
-            <Btn variant="primary" onClick={startEdit}>
-              <Pencil size={14} /> Edit about me
-            </Btn>
-          )}
-        </div>
+      <header className="px-5 sm:px-8 md:px-10 pt-8 sm:pt-10 md:pt-14 pb-5 md:pb-6 border-b border-line">
+        <h1 className="font-display text-lg mb-2">Profile</h1>
+        <p className="font-mono text-sm text-txd">Who's actually behind the cartridges.</p>
       </header>
 
-      <section className="px-6 md:px-10 py-10 w-full">
-        <div className="grid lg:grid-cols-[500px_3fr_500px] gap-6 items-start">
-          <div className="flex flex-col gap-6">
-            <PlayerProfileCard
-              profileImage={profileImage}
-              setProfileImage={setProfileImage}
-              heroDesc={heroDesc}
-              setHeroDesc={setHeroDesc}
-              authed={authed}
-            />
-
-            {editing ? (
-              <div className="rounded-lg p-6 bg-panel border border-line">
-                <div className="font-mono font-semibold text-sm mb-5 text-cyan">About me</div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <Field label="Nickname">
-                    <input className={inputClass} value={draft.nickname} onChange={(e) => setDraft({ ...draft, nickname: e.target.value })} placeholder="Vin" />
-                  </Field>
-                  <Field label="Alias">
-                    <input className={inputClass} value={draft.alias} onChange={(e) => setDraft({ ...draft, alias: e.target.value })} placeholder="Vin Redeemer" />
-                  </Field>
-                </div>
-                <Field label="About me">
-                  <textarea className={`${inputClass} min-h-[110px] resize-y`} value={draft.bio} onChange={(e) => setDraft({ ...draft, bio: e.target.value })} placeholder="A few lines about who you are…" />
-                </Field>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <Field label="YouTube URL">
-                    <input className={inputClass} value={draft.youtube} onChange={(e) => setDraft({ ...draft, youtube: e.target.value })} placeholder="https://youtube.com/@…" />
-                  </Field>
-                  <Field label="TikTok URL">
-                    <input className={inputClass} value={draft.tiktok} onChange={(e) => setDraft({ ...draft, tiktok: e.target.value })} placeholder="https://tiktok.com/@…" />
-                  </Field>
-                </div>
-
-                <div className="mt-6">
-  <div className="font-mono font-semibold text-sm mb-4 text-cyan">
-    Creator Stats
-  </div>
-
-  <div className="grid sm:grid-cols-2 gap-4">
-
-    <Field label="YouTube Subscribers">
-      <input
-        className={inputClass}
-        value={draftStats.youtube}
-        onChange={(e)=>
-          setDraftStats({
-            ...draftStats,
-            youtube: e.target.value
-          })
-        }
-      />
-    </Field>
-
-    <Field label="Facebook Followers">
-      <input
-        className={inputClass}
-        value={draftStats.facebook}
-        onChange={(e)=>
-          setDraftStats({
-            ...draftStats,
-            facebook: e.target.value
-          })
-        }
-      />
-    </Field>
-
-    <Field label="TikTok Followers">
-      <input
-        className={inputClass}
-        value={draftStats.tiktok}
-        onChange={(e)=>
-          setDraftStats({
-            ...draftStats,
-            tiktok: e.target.value
-          })
-        }
-      />
-    </Field>
-
-    <Field label="GitHub Repositories">
-      <input
-        className={inputClass}
-        value={draftStats.githubRepos}
-        onChange={(e)=>
-          setDraftStats({
-            ...draftStats,
-            githubRepos: e.target.value
-          })
-        }
-      />
-    </Field>
-
-  </div>
-</div>
-
-                <div className="mt-2 mb-3 font-mono text-xs uppercase tracking-wide text-txd">Other webapps / links</div>
-                {draft.links.map((l) => (
-                  <div key={l.id} className="flex gap-2 mb-2">
-                    <input className={inputClass} value={l.label} onChange={(e) => updateLink(l.id, "label", e.target.value)} placeholder="Label, e.g. Discord" />
-                    <input className={inputClass} value={l.url} onChange={(e) => updateLink(l.id, "url", e.target.value)} placeholder="https://…" />
-                    <button onClick={() => removeLink(l.id)} className="w-10 h-10 shrink-0 rounded border border-lineb text-txf hover:text-mag hover:border-mag flex items-center justify-center" aria-label="Remove link">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
-                <button onClick={addLink} className="flex items-center gap-1.5 font-mono text-xs text-cyan mt-1 mb-6">
-                  <Plus size={13} /> Add link
-                </button>
-
-                <div className="flex gap-3">
-                  <Btn variant="primary" onClick={save}><Check size={14} /> Save profile</Btn>
-                  <Btn variant="ghost" onClick={() => setEditing(false)}><XIcon size={14} /> Cancel</Btn>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-lg p-6 bg-panel border border-line">
-
-
-                <p className="text-lg text-txd mb-6 whitespace-pre-wrap">
-                  {profile.bio || (authed ? 'No bio yet — click "Edit about me" to add one.' : "")}
-                </p>
-
-                <div className="flex flex-wrap gap-3 mb-6">
-                  {safeHref(profile.youtube) && (
-                    <a href={safeHref(profile.youtube)} target="_blank" rel="noopener noreferrer">
-                      <Btn variant="watch" className="!px-3 !py-2 !text-[11px]"><Youtube size={14} /> YouTube</Btn>
-                    </a>
-                  )}
-                  {safeHref(profile.tiktok) && (
-                    <a href={safeHref(profile.tiktok)} target="_blank" rel="noopener noreferrer">
-                      <Btn variant="ghost" className="!px-3 !py-2 !text-[11px]"><Music2 size={14} /> TikTok</Btn>
-                    </a>
-                  )}
-                </div>
-
-                {profile.links.length > 0 && (
-                  <div>
-                    <div className="font-mono text-xs uppercase tracking-wide text-txd mb-3">Elsewhere</div>
-                    <div className="flex flex-wrap gap-3">
-                      {profile.links.map((l) =>
-                        safeHref(l.url) ? (
-                          <a key={l.id} href={safeHref(l.url)} target="_blank" rel="noopener noreferrer">
-                            <Btn variant="ghost" className="!px-3 !py-2 !text-[11px]"><Link2 size={13} /> {l.label}</Btn>
-                          </a>
-                        ) : null
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-<div className="grid grid-cols-[900px_3fr_500px] gap-6">
-          <div className="rounded-lg p-6 bg-panel border border-line">
+      <section className="px-5 sm:px-8 md:px-10 py-6 md:py-10 max-w-6xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-1.5 items-stretch mb-6">
+          <PlayerProfileCard
+            profileImage={profileImage}
+            setProfileImage={setProfileImage}
+            heroDesc={heroDesc}
+            setHeroDesc={setHeroDesc}
+            authed={authed}
+          />
+          <div className="rounded-lg p-6 bg-panel border border-line h-full">
             <StickerSheet stickers={stickers} setStickers={setStickers} authed={authed} />
           </div>
-
-          <CreatorStatsCard stats={stats} />
-
+          <SocialsCard profile={profile} setProfile={setProfile} authed={authed} />
         </div>
+
+        <div className="mb-6">
+          <AboutMePageCard aboutMe={aboutMe} setAboutMe={setAboutMe} authed={authed} />
         </div>
 
         {authed && (
-          <div className="mt-6">
-            <PagesCard customPages={customPages} onNewPage={onNewPage} onDeleteCustomPage={onDeleteCustomPage} />
-          </div>
+          <PagesCard customPages={customPages} onNewPage={onNewPage} onDeleteCustomPage={onDeleteCustomPage} />
         )}
       </section>
     </>

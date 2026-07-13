@@ -9,6 +9,43 @@ modal. Only correct credentials unlock **admin mode** — that's what shows
 the "+ Add game" / "+ Add video" buttons and the ✕ remove buttons on
 cards. Everyone else just sees your content, read-only.
 
+## Responsive layout — fitting the screen on PC, tablet, and phone
+
+Every page now adapts its spacing, grid density, and (for paginated
+pages) how much it shows per page based on device size:
+- **Hero** fills exactly one screen's height below the navbar
+  (`.screen-fit` in `src/index.css`, using `100dvh` so mobile browser
+  chrome doesn't cause a false gap), so the landing view reads as a
+  single screen rather than the top of a long scroll.
+- **Other pages** get the same `.screen-fit` treatment as a minimum
+  height, so a page with little content (an empty Merch or About page)
+  still fills the screen instead of leaving the footer stranded near the
+  top — but content that's actually long will still push past one screen,
+  on purpose (see below).
+- **Videos and the Sticker sheet** use an adaptive page size
+  (`useResponsiveValue` in `src/lib/useViewport.js`): fewer cards per
+  page on a phone (4 videos / 6 stickers), more on tablet, full-size on
+  desktop (10 each). That keeps each individual page closer to fitting a
+  small screen without much scrolling, while more content just becomes
+  another page tap rather than one long scroll.
+- **Grids** (Games, Merch, custom Cards pages) use a smaller minimum tile
+  width so phones get 2 columns instead of 1 where the screen allows it,
+  and the Profile page's 3-card row steps down to 2 columns on tablet
+  before collapsing to 1 on phone.
+
+**Being upfront about what this can't do:** "see everything, never
+scroll" is only possible while the amount of content stays small. Once
+you've added, say, 20 games or a full page of videos, there is more
+content than any phone screen can show at readable size — at that point
+the honest options are (a) let it scroll, which is what this does, (b)
+shrink everything until it's illegible, or (c) hide some of it, which
+directly contradicts "see every content." This update makes every page
+adapt and use its space efficiently on every device, and keeps individual
+pages of paginated content as screen-friendly as possible — but it does
+not, and can't, eliminate scrolling once there's enough content to
+justify it. That's normal, expected behavior for a site that's actually
+being used and added to, not a bug.
+
 ## Run it
 
 ```bash
@@ -43,11 +80,12 @@ src/
     LoginModal.jsx            admin sign-in, opened from the navbar's Login button
     NewPageModal.jsx           "New page" form, opened from Profile's Pages card
     GamesPage.jsx               game cards — tags/genres, filter bar, click through to videos
-    VideosPage.jsx               video cards + genre filter + YouTube sync — reused for custom "Videos" pages
+    VideosPage.jsx               video cards — own tags + inherited game tags, genre filter, YouTube sync
     GenreFilterBar.jsx            Any/Soulslike/FPS/RPG filter pills, shared by Games + Videos
     YouTubeSync.jsx               admin panel that pulls your uploads playlist into Videos
     GenericCardsPage.jsx          reusable card grid — powers Merch + custom "Cards" pages
-    ProfilePage.jsx                nickname/alias/bio, hero photo/description, links, sticker sheet, pages
+    ProfilePage.jsx                Player Profile / Sticker sheet / Socials cards, About Me page editor, Pages
+    AboutMePage.jsx                 public About page: hobbies, games, free time
     StickerSheet.jsx                embeddable sticker grid used inside Profile
     Pagination.jsx                   shared Prev/Next pager (Videos + Sticker sheet)
     Btn.jsx / Field.jsx             small shared UI pieces
@@ -65,7 +103,7 @@ tailwind.config.js         theme: colors, fonts, glow shadows
 
 ## Pages
 
-**Public, in the centered nav:** Home, Games, Videos, Merchandise (beta).
+**Public, in the centered nav:** Home, Games, Videos, About, Merchandise (beta).
 **Profile is hidden from visitors** — it only shows up for you, via the
 gear icon next to Log out (top right, once signed in). It's not in the
 nav, mobile menu, or anywhere a visitor would stumble onto it. Worth
@@ -84,32 +122,46 @@ everything else admin-only. There isn't a page template for Home/Hero — a
 second hero wouldn't make sense on one site — but Cards and Videos cover
 most other cases.
 
-## Editing your photo, description, and profile
+## Editing your photo, description, profile, and socials
 
 All of it lives on the **Profile page** — sign in, click the gear icon
-next to Log out, then Profile:
-- **Player Profile card**: your circular hero photo (upload or URL) and
-  the Hero section's description text.
-- **About me card**, stacked right below it, same width: nickname, alias,
-  bio, YouTube/TikTok, and any other links (Discord, Twitch, another
-  webapp — whatever you want listed). These same YouTube/TikTok/other
-  links now also show up as small icon buttons in the **Hero section**
-  on Home — configure them once here, they show up there automatically.
-- **Sticker sheet card**, next to those two, matched to their combined height.
-- **Pages card**, below everything — create or delete custom pages (see above).
+next to Log out, then Profile. The top of the page is **three cards side
+by side** (stacked on smaller screens), with a tight 6px gap between them:
 
-The Home page's Hero section just displays whatever's set here — it has
-no edit controls of its own.
+1. **Player Profile** — your circular hero photo (upload or URL) and the
+   Hero section's description text.
+2. **Sticker sheet** — see below.
+3. **Socials** — YouTube, TikTok, and Facebook, each with a URL and an
+   optional "Following" count you type in yourself (there's no live
+   follower-count API wired up here — TikTok and Facebook don't offer a
+   simple free one, and even YouTube's would need its own API key/quota
+   just for a number, so this stays a plain editable text field, e.g.
+   "12.4K"). These URLs also show up as small icon buttons in the **Hero
+   section** on Home — configure them once here, they appear there automatically.
+
+Below that row:
+- **About Me page card** — hobbies, games you play, and a free-time blurb;
+  this is what populates the public **About** page in the nav (see below).
+- **Pages card** — create or delete custom pages.
+
+The Home page's Hero section and the public About page just display
+whatever's set here — neither has edit controls of its own.
+
+## About page
+
+A public page (`About` in the nav) showing hobbies and games as tag
+chips in one three-column row, plus a free-text "what I do in my free
+time" blurb — all edited from the **About Me page** card on Profile.
 
 ## Stickers
 
-The sticker sheet sits as its own card next to Player Profile / About Me
+The sticker sheet sits as its own card next to Player Profile / Socials
 on the (hidden, admin-only-findable) Profile page — it's meant as a
 personal asset library (forum replies, loading screens, wherever you need
 a quick image link) rather than a public gallery. Every sticker has a
 **"Copy"** button that copies its image URL to your clipboard. It shows
-in a fixed **5-column grid, 10 at a time**, with Prev/Next paging
-underneath once you have more than that.
+in a responsive grid (up to 5 columns), 10 at a time, with Prev/Next
+paging underneath once you have more than that.
 
 It ships with 8 generic placeholder chibi icons (`public/stickers/*.svg`)
 so it isn't empty — flat vector placeholders, not a generated likeness of
@@ -118,24 +170,24 @@ art of yourself, use an image generator (Midjourney, DALL·E, Ideogram,
 etc.) or a commissioned artist, then upload the results via "+ Add
 sticker" while signed in — URL or file upload both work.
 
-## Games: tags/genres, editing existing cards, and filtering
+## Games & Videos: tags/genres, editing, and filtering
 
-Each game card can carry any number of tags — genre, playstyle, whatever
-("Soulslike", "FPS", "Co-op", "100%'d") — added one at a time in the
-add/edit form and shown as small pills on the card. Existing cards are
-editable too: the pencil icon next to the ✕ on each card reopens the same
-form pre-filled, for title, image, description, or tags.
+Both game **and** video cards can carry any number of tags — genre,
+playstyle, whatever ("Soulslike", "FPS", "Co-op", "100%'d") — added one
+at a time in the add/edit form and shown as small pills on the card.
+Existing cards are editable too: the pencil icon next to the ✕ on each
+card reopens the same form pre-filled.
 
-Both the Games and Videos pages now show a filter bar — **Any / Soulslike
-/ FPS / RPG** — above the grid. On Games it filters directly by each
-card's tags. Videos don't carry their own tags; instead a video inherits
-its game's tags by matching its "Game tag" field to a game's title, so
-you only have to tag genres once, on Games. (Custom "Videos" template
-pages skip the filter bar entirely, since they aren't tied to a specific
-game.) Want different categories than Soulslike/FPS/RPG? Edit
-`GENRE_FILTERS` in `src/lib/genres.js` — everything else adapts automatically.
+A video's *effective* tags are the union of its own tags and the tags of
+whatever game it's linked to (via the "Game tag" field matching a game's
+title) — so you can tag a video directly, tag its game once and let the
+video inherit it, or both. Handy if a video doesn't cleanly belong to one
+game, or you just don't want to tag every single upload individually.
 
-## Videos: paging
+Both pages show a filter bar — **Any / Soulslike / FPS / RPG** — above
+the grid. (Custom "Videos" template pages skip the filter bar entirely,
+since they aren't tied to a specific game.) Want different categories?
+Edit `GENRE_FILTERS` in `src/lib/genres.js` — everything else adapts automatically.
 
 Videos show **10 per page** with Prev/Next controls underneath, so the
 grid doesn't turn into an endless scroll as you add more. Filtering by a

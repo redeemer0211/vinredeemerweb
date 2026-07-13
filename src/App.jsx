@@ -5,14 +5,14 @@ import GamesPage from "./components/GamesPage.jsx";
 import VideosPage from "./components/VideosPage.jsx";
 import GenericCardsPage from "./components/GenericCardsPage.jsx";
 import ProfilePage from "./components/ProfilePage.jsx";
+import AboutMePage from "./components/AboutMePage.jsx";
 import LoginModal from "./components/LoginModal.jsx";
 import NewPageModal from "./components/NewPageModal.jsx";
 import { isAuthed, clearSession } from "./lib/auth.js";
 import { loadList, saveList, loadValue, saveValue } from "./lib/storage.js";
-import { seedGames, seedVideos, seedMerch, seedStickers, defaultProfile, defaultHeroDesc, stats } from "./data/seed.js";
-import { stats as defaultStats } from "./data/seed.js";
+import { seedGames, seedVideos, seedMerch, seedStickers, defaultProfile, defaultHeroDesc, defaultAboutMe } from "./data/seed.js";
 
-const BUILTIN_PAGE_IDS = ["home", "games", "videos", "merch", "profile"];
+const BUILTIN_PAGE_IDS = ["home", "games", "videos", "merch", "about", "profile"];
 
 export default function App() {
   const [authed, setAuthed] = useState(isAuthed());
@@ -28,9 +28,9 @@ export default function App() {
   const [profile, setProfile] = useState(() => loadValue("vr_profile", defaultProfile));
   const [profileImage, setProfileImage] = useState(() => loadValue("vr_profile_image", ""));
   const [heroDesc, setHeroDesc] = useState(() => loadValue("vr_hero_desc", defaultHeroDesc));
+  const [aboutMe, setAboutMe] = useState(() => loadValue("vr_about_me", defaultAboutMe));
   const [customPages, setCustomPages] = useState(() => loadList("vr_custom_pages"));
   const [customData, setCustomData] = useState(() => loadValue("vr_custom_pages_data", {}));
-  const [stats, setStats] = useState(defaultStats);
 
   useEffect(() => saveList("vr_games", games), [games]);
   useEffect(() => saveList("vr_videos", videos), [videos]);
@@ -39,6 +39,7 @@ export default function App() {
   useEffect(() => saveValue("vr_profile", profile), [profile]);
   useEffect(() => saveValue("vr_profile_image", profileImage), [profileImage]);
   useEffect(() => saveValue("vr_hero_desc", heroDesc), [heroDesc]);
+  useEffect(() => saveValue("vr_about_me", aboutMe), [aboutMe]);
   useEffect(() => saveList("vr_custom_pages", customPages), [customPages]);
   useEffect(() => saveValue("vr_custom_pages_data", customData), [customData]);
 
@@ -88,67 +89,72 @@ export default function App() {
       {page === "home" && (
         <Hero setPage={goto} profileImage={profileImage} heroDesc={heroDesc} profile={profile} />
       )}
-      {page === "games" && (
-        <GamesPage games={games} setGames={setGames} gotoVideosForTag={gotoVideosForTag} authed={authed} />
-      )}
-      {page === "videos" && (
-        <VideosPage videos={videos} setVideos={setVideos} activeTag={activeTag} clearTag={() => setActiveTag(null)} authed={authed} games={games} />
-      )}
-      {page === "merch" && (
-        <GenericCardsPage
-          eyebrow="// Shop"
-          title="Merchandise"
-          subtitle="Everything here is a placeholder until you add the real stuff."
-          emptyText='No merch yet. Hit "+ Add item" to list your first piece.'
-          items={merch}
-          setItems={setMerch}
-          authed={authed}
-          badge="BETA"
-        />
-      )}
-      {page === "profile" && (
-        <ProfilePage
-          profile={profile}
-          setProfile={setProfile}
-          profileImage={profileImage}
-          setProfileImage={setProfileImage}
-          heroDesc={heroDesc}
-          setHeroDesc={setHeroDesc}
-          stickers={stickers}
-          setStickers={setStickers}
-          customPages={customPages}
-          onNewPage={() => setNewPageOpen(true)}
-          onDeleteCustomPage={deleteCustomPage}
-          authed={authed}
-          stats={stats}
-          setStats={setStats}
-        />
+      {page !== "home" && (
+        <div className="screen-fit flex flex-col">
+          {page === "games" && (
+            <GamesPage games={games} setGames={setGames} gotoVideosForTag={gotoVideosForTag} authed={authed} />
+          )}
+          {page === "videos" && (
+            <VideosPage videos={videos} setVideos={setVideos} activeTag={activeTag} clearTag={() => setActiveTag(null)} authed={authed} games={games} />
+          )}
+          {page === "merch" && (
+            <GenericCardsPage
+              eyebrow="// Shop"
+              title="Merchandise"
+              subtitle="Everything here is a placeholder until you add the real stuff."
+              emptyText='No merch yet. Hit "+ Add item" to list your first piece.'
+              items={merch}
+              setItems={setMerch}
+              authed={authed}
+              badge="BETA"
+            />
+          )}
+          {page === "about" && <AboutMePage aboutMe={aboutMe} />}
+          {page === "profile" && (
+            <ProfilePage
+              profile={profile}
+              setProfile={setProfile}
+              profileImage={profileImage}
+              setProfileImage={setProfileImage}
+              heroDesc={heroDesc}
+              setHeroDesc={setHeroDesc}
+              stickers={stickers}
+              setStickers={setStickers}
+              aboutMe={aboutMe}
+              setAboutMe={setAboutMe}
+              customPages={customPages}
+              onNewPage={() => setNewPageOpen(true)}
+              onDeleteCustomPage={deleteCustomPage}
+              authed={authed}
+            />
+          )}
+
+          {activeCustomPage && activeCustomPage.template === "cards" && (
+            <GenericCardsPage
+              eyebrow="// Custom page"
+              title={activeCustomPage.label}
+              items={customData[activeCustomPage.id] || []}
+              setItems={setCustomItems(activeCustomPage.id)}
+              authed={authed}
+            />
+          )}
+          {activeCustomPage && activeCustomPage.template === "videos" && (
+            <VideosPage
+              title={activeCustomPage.label}
+              showChannelLink={false}
+              showSync={false}
+              showGenreFilter={false}
+              videos={customData[activeCustomPage.id] || []}
+              setVideos={setCustomItems(activeCustomPage.id)}
+              activeTag={null}
+              clearTag={() => {}}
+              authed={authed}
+            />
+          )}
+        </div>
       )}
 
-      {activeCustomPage && activeCustomPage.template === "cards" && (
-        <GenericCardsPage
-          eyebrow="// Custom page"
-          title={activeCustomPage.label}
-          items={customData[activeCustomPage.id] || []}
-          setItems={setCustomItems(activeCustomPage.id)}
-          authed={authed}
-        />
-      )}
-      {activeCustomPage && activeCustomPage.template === "videos" && (
-        <VideosPage
-          title={activeCustomPage.label}
-          showChannelLink={false}
-          showSync={false}
-          showGenreFilter={false}
-          videos={customData[activeCustomPage.id] || []}
-          setVideos={setCustomItems(activeCustomPage.id)}
-          activeTag={null}
-          clearTag={() => {}}
-          authed={authed}
-        />
-      )}
-
-      <footer className="px-6 md:px-10 py-8 flex justify-between flex-wrap gap-3 font-mono text-xs text-txf border-t border-line">
+      <footer className="px-5 sm:px-8 md:px-10 py-5 md:py-8 flex justify-between flex-wrap gap-3 font-mono text-xs text-txf border-t border-line">
         <span>© {new Date().getFullYear()} Vin Redeemer</span>
         <span>{authed ? "Signed in as admin" : "Public view"}</span>
       </footer>

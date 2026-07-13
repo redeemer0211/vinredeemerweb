@@ -5,6 +5,7 @@ const BUILTIN_LINKS = [
   { id: "home", label: "Home" },
   { id: "games", label: "Games" },
   { id: "videos", label: "Videos" },
+  { id: "about", label: "About" },
   { id: "merch", label: "Merch", badge: "BETA" },
 ];
 

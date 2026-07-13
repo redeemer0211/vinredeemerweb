@@ -4,8 +4,7 @@ import Btn from "./Btn.jsx";
 import Field, { inputClass } from "./Field.jsx";
 import Pagination from "./Pagination.jsx";
 import { safeImageSrc } from "../lib/sanitize.js";
-
-const PAGE_SIZE = 10;
+import { useResponsiveValue } from "../lib/useViewport.js";
 
 export default function StickerSheet({ stickers, setStickers, authed }) {
   const [formOpen, setFormOpen] = useState(false);
@@ -15,6 +14,7 @@ export default function StickerSheet({ stickers, setStickers, authed }) {
   const [copiedId, setCopiedId] = useState(null);
   const [page, setPage] = useState(1);
   const fileRef = useRef(null);
+  const PAGE_SIZE = useResponsiveValue({ mobile: 6, tablet: 8, desktop: 10 });
 
   const totalPages = Math.max(1, Math.ceil(stickers.length / PAGE_SIZE));
   const pageItems = stickers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
