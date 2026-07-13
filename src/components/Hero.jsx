@@ -18,8 +18,7 @@ export default function Hero({ setPage, profileImage, heroDesc, profile }) {
         <div>
           <span className="font-mono text-xs uppercase tracking-widest text-cyan">// Player Profile</span>
           <h1 className="font-display mt-3 mb-4 leading-relaxed text-[clamp(1.25rem,4vw,2.2rem)]">
-            Hey, I'm <span className="text-cyan text-glow-cyan">Vin</span>.<br />
-            I play the games, then I post the runs worth watching.
+            Hey, I'm <span className="text-cyan text-glow-cyan">Vin</span>!<br /> 
           </h1>
           <p className="mb-5 max-w-md text-base sm:text-lg text-txd">{heroDesc}</p>
           <div className="flex gap-3 sm:gap-4 flex-wrap mb-5">
