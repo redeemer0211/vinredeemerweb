@@ -196,9 +196,7 @@ export default function GamesPage({ games, setGames, gotoVideosForTag, authed })
                         ))}
                       </div>
                     )}
-                    <div className="flex justify-between items-center mt-1">
-                      <span className="font-mono text-[10px] px-2 py-1 rounded-full border border-cyan-dim text-cyan">CARTRIDGE</span>
-                    </div>
+
                   </div>
                 </div>
               );
