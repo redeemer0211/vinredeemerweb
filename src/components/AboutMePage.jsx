@@ -1,5 +1,55 @@
-export default function AboutMePage({ aboutMe }) {
-  const { hobbies = [], games = [], freeTime = "" } = aboutMe || {};
+import { useState } from "react";
+import { User, Youtube } from "lucide-react";
+import Pagination from "./Pagination.jsx";
+import { safeImageSrc } from "../lib/sanitize.js";
+import { parseYouTubeId } from "../lib/youtube.js";
+import { useResponsiveValue } from "../lib/useViewport.js";
+
+function MediaTile({ item }) {
+  if (item.type === "video") {
+    const id = parseYouTubeId(item.url);
+    return (
+      <div className="rounded-lg overflow-hidden bg-panel border border-line">
+        <div className="relative aspect-video bg-black">
+          {id ? (
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src={`https://www.youtube-nocookie.com/embed/${id}`}
+              title={item.caption || "video"}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              loading="lazy"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center font-mono text-xs text-txf">Couldn't read that link</div>
+          )}
+        </div>
+        {item.caption && <div className="px-3 py-2 font-mono text-[11px] text-txd border-t border-line">{item.caption}</div>}
+      </div>
+    );
+  }
+  const img = safeImageSrc(item.url);
+  return (
+    <div className="rounded-lg overflow-hidden bg-panel border border-line">
+      <div className="aspect-video bg-raised flex items-center justify-center">
+        {img ? (
+          <img src={img} alt={item.caption || "photo"} className="w-full h-full object-cover" onContextMenu={(e) => e.preventDefault()} />
+        ) : (
+          <span className="font-mono text-xs text-txf">NO IMAGE</span>
+        )}
+      </div>
+      {item.caption && <div className="px-3 py-2 font-mono text-[11px] text-txd border-t border-line">{item.caption}</div>}
+    </div>
+  );
+}
+
+export default function AboutMePage({ aboutMe, profileImage }) {
+  const { tags = [], description = "", media = [] } = aboutMe || {};
+  const cleanImage = safeImageSrc(profileImage);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = useResponsiveValue({ mobile: 2, tablet: 3, desktop: 4 });
+  const totalPages = Math.max(1, Math.ceil(media.length / PAGE_SIZE));
+  const pageItems = media.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <>
@@ -9,38 +59,54 @@ export default function AboutMePage({ aboutMe }) {
       </header>
 
       <section className="px-5 sm:px-8 md:px-10 py-6 md:py-10 max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-3 gap-6 items-stretch">
-          <div className="rounded-lg p-6 bg-panel border border-line h-full">
-            <div className="font-mono font-semibold text-sm mb-4 text-cyan">Hobbies</div>
-            {hobbies.length === 0 ? (
-              <p className="font-mono text-xs text-txf">Nothing listed yet.</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {hobbies.map((h) => (
-                  <span key={h} className="font-mono text-xs px-3 py-1.5 rounded-full border border-cyan-dim text-cyan">{h}</span>
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1.4fr)] gap-6 items-start">
+          {/* Left — photo + tags */}
+          <div className="rounded-lg p-6 bg-panel border border-line">
+            <div className="w-32 sm:w-36 aspect-square rounded-full overflow-hidden bg-raised border border-lineb mx-auto">
+              {cleanImage ? (
+                <img src={cleanImage} alt="Vin Redeemer" className="w-full h-full object-cover" onContextMenu={(e) => e.preventDefault()} />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-dim/30 to-mag-dim/30">
+                  <User size={32} className="text-txf" />
+                </div>
+              )}
+            </div>
+            {tags.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-2 mt-5">
+                {tags.map((t) => (
+                  <span key={t} className="font-mono text-xs px-3 py-1.5 rounded-full border border-cyan-dim text-cyan">{t}</span>
                 ))}
               </div>
             )}
           </div>
 
+          {/* Middle — description */}
           <div className="rounded-lg p-6 bg-panel border border-line h-full">
-            <div className="font-mono font-semibold text-sm mb-4 text-cyan">Games I play</div>
-            {games.length === 0 ? (
-              <p className="font-mono text-xs text-txf">Nothing listed yet.</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {games.map((g) => (
-                  <span key={g} className="font-mono text-xs px-3 py-1.5 rounded-full border border-mag-dim text-mag">{g}</span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="rounded-lg p-6 bg-panel border border-line h-full">
-            <div className="font-mono font-semibold text-sm mb-4 text-cyan">Free time</div>
-            <p className="text-sm text-txd whitespace-pre-wrap">
-              {freeTime || "Nothing written yet."}
+            <div className="font-mono font-semibold text-sm mb-4 text-cyan">Description</div>
+            <p className="text-sm sm:text-base text-txd whitespace-pre-wrap">
+              {description || "Nothing written yet."}
             </p>
+          </div>
+
+          {/* Right — media gallery */}
+          <div className="rounded-lg p-6 bg-panel border border-line h-full">
+            <div className="font-mono font-semibold text-sm mb-4 text-cyan flex items-center gap-2">
+              <Youtube size={14} className="text-txf" /> Photos & videos
+            </div>
+            {media.length === 0 ? (
+              <div className="text-center py-10 rounded border border-dashed border-lineb text-txd font-mono text-xs">
+                Nothing uploaded yet.
+              </div>
+            ) : (
+              <>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {pageItems.map((item) => (
+                    <MediaTile key={item.id} item={item} />
+                  ))}
+                </div>
+                <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+              </>
+            )}
           </div>
         </div>
       </section>
