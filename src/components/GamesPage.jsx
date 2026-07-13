@@ -198,9 +198,6 @@ export default function GamesPage({ games, setGames, gotoVideosForTag, authed })
                     )}
                     <div className="flex justify-between items-center mt-1">
                       <span className="font-mono text-[10px] px-2 py-1 rounded-full border border-cyan-dim text-cyan">CARTRIDGE</span>
-                      <Btn variant="primary" className="!px-3 !py-1.5 !text-[11px]" onClick={() => gotoVideosForTag(g.tag)}>
-                        Play <ChevronRight size={12} />
-                      </Btn>
                     </div>
                   </div>
                 </div>
