@@ -9,7 +9,7 @@ function MediaTile({ item }) {
   if (item.type === "video") {
     const id = parseYouTubeId(item.url);
     return (
-      <div className="rounded-lg overflow-hidden bg-panel border border-line">
+      <div className="rounded-lg overflow-hidden bg-raised border border-line">
         <div className="relative aspect-video bg-black">
           {id ? (
             <iframe
@@ -30,8 +30,8 @@ function MediaTile({ item }) {
   }
   const img = safeImageSrc(item.url);
   return (
-    <div className="rounded-lg overflow-hidden bg-panel border border-line">
-      <div className="aspect-video bg-raised flex items-center justify-center">
+    <div className="rounded-lg overflow-hidden bg-raised border border-line">
+      <div className="aspect-video bg-void flex items-center justify-center">
         {img ? (
           <img src={img} alt={item.caption || "photo"} className="w-full h-full object-cover" onContextMenu={(e) => e.preventDefault()} />
         ) : (
@@ -47,7 +47,7 @@ export default function AboutMePage({ aboutMe, profileImage }) {
   const { tags = [], description = "", media = [] } = aboutMe || {};
   const cleanImage = safeImageSrc(profileImage);
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = useResponsiveValue({ mobile: 2, tablet: 3, desktop: 4 });
+  const PAGE_SIZE = useResponsiveValue({ mobile: 2, tablet: 4, desktop: 4 });
   const totalPages = Math.max(1, Math.ceil(media.length / PAGE_SIZE));
   const pageItems = media.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -59,53 +59,54 @@ export default function AboutMePage({ aboutMe, profileImage }) {
       </header>
 
       <section className="px-5 sm:px-8 md:px-10 py-6 md:py-10 max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1.4fr)] gap-6 items-start">
-          {/* Left — photo + tags */}
-          <div className="rounded-lg p-6 bg-panel border border-line">
-            <div className="w-32 sm:w-36 aspect-square rounded-full overflow-hidden bg-raised border border-lineb mx-auto">
-              {cleanImage ? (
-                <img src={cleanImage} alt="Vin Redeemer" className="w-full h-full object-cover" onContextMenu={(e) => e.preventDefault()} />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-dim/30 to-mag-dim/30">
-                  <User size={32} className="text-txf" />
+        <div className="grid lg:grid-cols-2 gap-6 items-stretch">
+          {/* Left — photo + tags, stacked above description */}
+          <div className="flex flex-col gap-6">
+            <div className="rounded-lg p-6 bg-panel border border-line">
+              <div className="w-32 sm:w-36 aspect-square rounded-full overflow-hidden bg-raised border border-lineb mx-auto">
+                {cleanImage ? (
+                  <img src={cleanImage} alt="Vin Redeemer" className="w-full h-full object-cover" onContextMenu={(e) => e.preventDefault()} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-dim/30 to-mag-dim/30">
+                    <User size={32} className="text-txf" />
+                  </div>
+                )}
+              </div>
+              {tags.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-2 mt-5">
+                  {tags.map((t) => (
+                    <span key={t} className="font-mono text-xs px-3 py-1.5 rounded-full border border-cyan-dim text-cyan">{t}</span>
+                  ))}
                 </div>
               )}
             </div>
-            {tags.length > 0 && (
-              <div className="flex flex-wrap justify-center gap-2 mt-5">
-                {tags.map((t) => (
-                  <span key={t} className="font-mono text-xs px-3 py-1.5 rounded-full border border-cyan-dim text-cyan">{t}</span>
-                ))}
-              </div>
-            )}
+
+            <div className="rounded-lg p-6 bg-panel border border-line">
+              <div className="font-mono font-semibold text-sm mb-4 text-cyan">Description</div>
+              <p className="text-sm sm:text-base text-txd whitespace-pre-wrap">
+                {description || "Nothing written yet."}
+              </p>
+            </div>
           </div>
 
-          {/* Middle — description */}
-          <div className="rounded-lg p-6 bg-panel border border-line h-full">
-            <div className="font-mono font-semibold text-sm mb-4 text-cyan">Description</div>
-            <p className="text-sm sm:text-base text-txd whitespace-pre-wrap">
-              {description || "Nothing written yet."}
-            </p>
-          </div>
-
-          {/* Right — media gallery */}
-          <div className="rounded-lg p-6 bg-panel border border-line h-full">
+          {/* Right — media gallery, matched to the combined height of the two cards on the left */}
+          <div className="rounded-lg p-6 bg-panel border border-line h-full flex flex-col">
             <div className="font-mono font-semibold text-sm mb-4 text-cyan flex items-center gap-2">
               <Youtube size={14} className="text-txf" /> Photos & videos
             </div>
             {media.length === 0 ? (
-              <div className="text-center py-10 rounded border border-dashed border-lineb text-txd font-mono text-xs">
+              <div className="flex-1 flex items-center justify-center text-center py-10 rounded border border-dashed border-lineb text-txd font-mono text-xs">
                 Nothing uploaded yet.
               </div>
             ) : (
-              <>
+              <div className="flex-1 flex flex-col justify-center">
                 <div className="grid sm:grid-cols-2 gap-4">
                   {pageItems.map((item) => (
                     <MediaTile key={item.id} item={item} />
                   ))}
                 </div>
                 <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-              </>
+              </div>
             )}
           </div>
         </div>
