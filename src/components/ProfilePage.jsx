@@ -7,6 +7,8 @@ import Btn from "./Btn.jsx";
 import Field, { inputClass } from "./Field.jsx";
 import StickerSheet from "./StickerSheet.jsx";
 import { safeHref, safeImageSrc } from "../lib/sanitize.js";
+import { parseYouTubeId } from "../lib/youtube.js";
+import { normalizeAboutMe } from "../lib/aboutMe.js";
 
 function PlayerProfileCard({ profileImage, setProfileImage, heroDesc, setHeroDesc, authed }) {
   const [editingPhoto, setEditingPhoto] = useState(false);
@@ -167,22 +169,60 @@ function SocialsCard({ profile, setProfile, authed }) {
 
 function AboutMePageCard({ aboutMe, setAboutMe, authed }) {
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(aboutMe);
-  const [hobbyInput, setHobbyInput] = useState("");
-  const [gameInput, setGameInput] = useState("");
+  const [draft, setDraft] = useState(() => normalizeAboutMe(aboutMe));
+  const [tagInput, setTagInput] = useState("");
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaCaption, setMediaCaption] = useState("");
+  const [mediaError, setMediaError] = useState("");
+  const fileRef = useRef(null);
 
-  function startEdit() { setDraft(aboutMe); setEditing(true); }
+  function startEdit() { setDraft(normalizeAboutMe(aboutMe)); setEditing(true); }
   function save() { setAboutMe(draft); setEditing(false); }
 
-  function addTag(field, input, setInput) {
-    const v = input.trim();
+  function addTag() {
+    const v = tagInput.trim();
     if (!v) return;
-    if (draft[field].some((x) => x.toLowerCase() === v.toLowerCase())) { setInput(""); return; }
-    setDraft((d) => ({ ...d, [field]: [...d[field], v] }));
-    setInput("");
+    if (draft.tags.some((x) => x.toLowerCase() === v.toLowerCase())) { setTagInput(""); return; }
+    setDraft((d) => ({ ...d, tags: [...d.tags, v] }));
+    setTagInput("");
   }
-  function removeTag(field, v) {
-    setDraft((d) => ({ ...d, [field]: d[field].filter((x) => x !== v) }));
+  function removeTag(v) {
+    setDraft((d) => ({ ...d, tags: d.tags.filter((x) => x !== v) }));
+  }
+
+  function addMedia(e) {
+    e.preventDefault();
+    setMediaError("");
+    const file = fileRef.current?.files?.[0];
+
+    function commitImage(url) {
+      const clean = safeImageSrc(url);
+      if (!clean) { setMediaError("That doesn't look like a usable image."); return; }
+      setDraft((d) => ({ ...d, media: [{ id: Date.now().toString(36), type: "image", url: clean, caption: mediaCaption.trim() }, ...d.media] }));
+      setMediaUrl(""); setMediaCaption("");
+      if (fileRef.current) fileRef.current.value = "";
+    }
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => commitImage(reader.result);
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    const trimmed = mediaUrl.trim();
+    if (!trimmed) { setMediaError("Add an image URL, upload a file, or paste a YouTube link."); return; }
+
+    const videoId = parseYouTubeId(trimmed);
+    if (videoId) {
+      setDraft((d) => ({ ...d, media: [{ id: Date.now().toString(36), type: "video", url: trimmed, caption: mediaCaption.trim() }, ...d.media] }));
+      setMediaUrl(""); setMediaCaption("");
+      return;
+    }
+    commitImage(trimmed);
+  }
+  function removeMedia(id) {
+    setDraft((d) => ({ ...d, media: d.media.filter((m) => m.id !== id) }));
   }
 
   return (
@@ -190,7 +230,7 @@ function AboutMePageCard({ aboutMe, setAboutMe, authed }) {
       <div className="flex justify-between items-center mb-5">
         <div>
           <div className="font-mono font-semibold text-sm text-cyan">About Me page</div>
-          <p className="font-mono text-xs text-txd mt-1">Hobbies, games you play, and what you do in your free time — shown on the public About page.</p>
+          <p className="font-mono text-xs text-txd mt-1">Your photo's tags, description, and a photo/video gallery — shown on the public About page.</p>
         </div>
         {authed && !editing && (
           <Btn variant="primary" className="!px-3 !py-2 !text-[11px]" onClick={startEdit}>
@@ -201,55 +241,64 @@ function AboutMePageCard({ aboutMe, setAboutMe, authed }) {
 
       {editing ? (
         <div>
-          <Field label="Hobbies" hint="Press Enter or Add after each one.">
+          <Field label="Tags" hint="Shown under your photo — e.g. Gunpla, Gamer, Hiker, Traveller. Press Enter or Add after each one.">
             <div className="flex gap-2">
               <input
                 className={inputClass}
-                value={hobbyInput}
-                onChange={(e) => setHobbyInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag("hobbies", hobbyInput, setHobbyInput); } }}
-                placeholder="Photography"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
+                placeholder="Gunpla"
               />
-              <Btn type="button" variant="ghost" className="!px-3 !py-2 !text-[11px]" onClick={() => addTag("hobbies", hobbyInput, setHobbyInput)}>Add</Btn>
+              <Btn type="button" variant="ghost" className="!px-3 !py-2 !text-[11px]" onClick={addTag}>Add</Btn>
             </div>
-            {draft.hobbies.length > 0 && (
+            {draft.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
-                {draft.hobbies.map((h) => (
-                  <span key={h} className="inline-flex items-center gap-1.5 font-mono text-[10px] px-2 py-1 rounded-full border border-cyan-dim text-cyan">
-                    {h}
-                    <button type="button" onClick={() => removeTag("hobbies", h)} aria-label={`Remove ${h}`}><XIcon size={10} /></button>
+                {draft.tags.map((t) => (
+                  <span key={t} className="inline-flex items-center gap-1.5 font-mono text-[10px] px-2 py-1 rounded-full border border-cyan-dim text-cyan">
+                    {t}
+                    <button type="button" onClick={() => removeTag(t)} aria-label={`Remove ${t}`}><XIcon size={10} /></button>
                   </span>
                 ))}
               </div>
             )}
           </Field>
 
-          <Field label="Games I play" hint="Press Enter or Add after each one.">
-            <div className="flex gap-2">
-              <input
-                className={inputClass}
-                value={gameInput}
-                onChange={(e) => setGameInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag("games", gameInput, setGameInput); } }}
-                placeholder="Elden Ring"
-              />
-              <Btn type="button" variant="ghost" className="!px-3 !py-2 !text-[11px]" onClick={() => addTag("games", gameInput, setGameInput)}>Add</Btn>
-            </div>
-            {draft.games.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-3">
-                {draft.games.map((g) => (
-                  <span key={g} className="inline-flex items-center gap-1.5 font-mono text-[10px] px-2 py-1 rounded-full border border-mag-dim text-mag">
-                    {g}
-                    <button type="button" onClick={() => removeTag("games", g)} aria-label={`Remove ${g}`}><XIcon size={10} /></button>
-                  </span>
-                ))}
-              </div>
-            )}
+          <Field label="Description about me">
+            <textarea className={`${inputClass} min-h-[110px] resize-y`} value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} placeholder="A paragraph about who you are, day to day…" />
           </Field>
 
-          <Field label="What I do in my free time">
-            <textarea className={`${inputClass} min-h-[100px] resize-y`} value={draft.freeTime} onChange={(e) => setDraft({ ...draft, freeTime: e.target.value })} />
-          </Field>
+          <div className="mt-2 mb-3 font-mono text-xs uppercase tracking-wide text-txd">Photos & videos</div>
+          <div className="rounded p-4 mb-4 bg-raised border border-line">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Field label="Image URL or YouTube link">
+                <input className={inputClass} value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} placeholder="https://… or a YouTube link" />
+              </Field>
+              <Field label="…or upload an image">
+                <input ref={fileRef} type="file" accept="image/*" className={inputClass} />
+              </Field>
+            </div>
+            <Field label="Caption (optional)">
+              <input className={inputClass} value={mediaCaption} onChange={(e) => setMediaCaption(e.target.value)} />
+            </Field>
+            {mediaError && <p className="font-mono text-xs mb-3 text-mag">{mediaError}</p>}
+            <Btn variant="primary" className="!px-3 !py-2 !text-[11px]" onClick={addMedia}><Plus size={13} /> Add to gallery</Btn>
+          </div>
+          {draft.media.length > 0 && (
+            <div className="flex flex-col gap-2 mb-6">
+              {draft.media.map((m) => (
+                <div key={m.id} className="flex items-center justify-between px-4 py-2.5 rounded bg-raised border border-line">
+                  <span className="font-mono text-xs text-txd truncate">
+                    <span className="text-txf uppercase mr-2">{m.type}</span>
+                    {m.caption || m.url}
+                  </span>
+                  <button onClick={() => removeMedia(m.id)} className="w-7 h-7 shrink-0 rounded border border-lineb text-txf hover:text-mag hover:border-mag flex items-center justify-center" aria-label="Remove media">
+                    <XIcon size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="flex gap-3">
             <Btn variant="primary" onClick={save}><Check size={14} /> Save</Btn>
@@ -259,16 +308,16 @@ function AboutMePageCard({ aboutMe, setAboutMe, authed }) {
       ) : (
         <div className="grid sm:grid-cols-3 gap-4">
           <div>
-            <div className="font-mono text-[11px] uppercase tracking-wide text-txf mb-2">Hobbies</div>
-            <p className="text-sm text-txd">{aboutMe.hobbies.length ? aboutMe.hobbies.join(", ") : "—"}</p>
+            <div className="font-mono text-[11px] uppercase tracking-wide text-txf mb-2">Tags</div>
+            <p className="text-sm text-txd">{(aboutMe.tags || []).length ? aboutMe.tags.join(", ") : "—"}</p>
           </div>
           <div>
-            <div className="font-mono text-[11px] uppercase tracking-wide text-txf mb-2">Games</div>
-            <p className="text-sm text-txd">{aboutMe.games.length ? aboutMe.games.join(", ") : "—"}</p>
+            <div className="font-mono text-[11px] uppercase tracking-wide text-txf mb-2">Description</div>
+            <p className="text-sm text-txd">{aboutMe.description || "—"}</p>
           </div>
           <div>
-            <div className="font-mono text-[11px] uppercase tracking-wide text-txf mb-2">Free time</div>
-            <p className="text-sm text-txd">{aboutMe.freeTime || "—"}</p>
+            <div className="font-mono text-[11px] uppercase tracking-wide text-txf mb-2">Gallery</div>
+            <p className="text-sm text-txd">{(aboutMe.media || []).length ? `${aboutMe.media.length} item${aboutMe.media.length === 1 ? "" : "s"}` : "—"}</p>
           </div>
         </div>
       )}

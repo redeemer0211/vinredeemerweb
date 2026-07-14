@@ -149,9 +149,21 @@ whatever's set here — neither has edit controls of its own.
 
 ## About page
 
-A public page (`About` in the nav) showing hobbies and games as tag
-chips in one three-column row, plus a free-text "what I do in my free
-time" blurb — all edited from the **About Me page** card on Profile.
+A public page (`About` in the nav) laid out in three columns:
+- **Left** — your circular photo (same one set on Profile's Player
+  Profile card) with identity/interest tags underneath (e.g. "Gunpla,
+  Gamer, Hiker, Traveller").
+- **Middle** — a description paragraph about you.
+- **Right** — a photo/video gallery: paste an image URL, upload a file,
+  or paste a YouTube link and it's auto-detected as a video embed. Shown
+  a few at a time with Prev/Next paging, fewer per page on small screens.
+
+All three are edited from the **About Me page** card on Profile.
+If you had content saved under the old Hobbies/Games/Free-time fields
+from before this layout changed, it's migrated automatically the first
+time the page loads (`src/lib/aboutMe.js`) — Hobbies + Games merge into
+Tags, Free-time becomes Description, nothing is lost. New installs just
+get the defaults from `seed.js`.
 
 ## Stickers
 

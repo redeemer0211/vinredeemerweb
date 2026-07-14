@@ -71,8 +71,8 @@ export const defaultHeroDesc =
   "This is where I keep the games I'm actually grinding right now and the gameplay I've cut together from them. Pick a game, jump to the clips — no algorithm, no clutter, just the stuff I made.";
 
 export const defaultAboutMe = {
-  hobbies: ["Photography", "Ramen hunting", "Building keyboards"],
-  games: ["Elden Ring", "Valorant"],
-  freeTime:
-    "When I'm not recording, I'm usually deep in a boss fight, scouting ramen spots, or tinkering with keyboard builds.",
+  tags: ["Gunpla", "Gamer", "Hiker", "Traveller"],
+  description:
+    "Full-time gamer, part-time video editor. When I'm not recording, I'm usually deep in a boss fight, building a kit, out on a trail, or planning the next trip.",
+  media: [],
 };

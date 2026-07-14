@@ -11,6 +11,7 @@ import NewPageModal from "./components/NewPageModal.jsx";
 import { isAuthed, clearSession } from "./lib/auth.js";
 import { loadList, saveList, loadValue, saveValue } from "./lib/storage.js";
 import { seedGames, seedVideos, seedMerch, seedStickers, defaultProfile, defaultHeroDesc, defaultAboutMe } from "./data/seed.js";
+import { normalizeAboutMe } from "./lib/aboutMe.js";
 
 const BUILTIN_PAGE_IDS = ["home", "games", "videos", "merch", "about", "profile"];
 
@@ -28,7 +29,7 @@ export default function App() {
   const [profile, setProfile] = useState(() => loadValue("vr_profile", defaultProfile));
   const [profileImage, setProfileImage] = useState(() => loadValue("vr_profile_image", ""));
   const [heroDesc, setHeroDesc] = useState(() => loadValue("vr_hero_desc", defaultHeroDesc));
-  const [aboutMe, setAboutMe] = useState(() => loadValue("vr_about_me", defaultAboutMe));
+  const [aboutMe, setAboutMe] = useState(() => normalizeAboutMe(loadValue("vr_about_me", defaultAboutMe)));
   const [customPages, setCustomPages] = useState(() => loadList("vr_custom_pages"));
   const [customData, setCustomData] = useState(() => loadValue("vr_custom_pages_data", {}));
 
@@ -109,7 +110,7 @@ export default function App() {
               badge="BETA"
             />
           )}
-          {page === "about" && <AboutMePage aboutMe={aboutMe} />}
+          {page === "about" && <AboutMePage aboutMe={aboutMe} profileImage={profileImage} />}
           {page === "profile" && (
             <ProfilePage
               profile={profile}

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Plus, X, ChevronRight, Pencil } from "lucide-react";
+import { Plus, X, Pencil } from "lucide-react";
 import Btn from "./Btn.jsx";
 import Field, { inputClass } from "./Field.jsx";
 import GenreFilterBar from "./GenreFilterBar.jsx";
@@ -196,7 +196,9 @@ export default function GamesPage({ games, setGames, gotoVideosForTag, authed })
                         ))}
                       </div>
                     )}
-
+                    <div className="flex justify-between items-center mt-1">
+                      <span className="font-mono text-[10px] px-2 py-1 rounded-full border border-cyan-dim text-cyan">CARTRIDGE</span>
+                    </div>
                   </div>
                 </div>
               );
