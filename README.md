@@ -152,12 +152,12 @@ whatever's set here — neither has edit controls of its own.
 A public page (`About` in the nav) laid out in two equal-width columns:
 - **Left** — two stacked cards: your circular photo (same one set on
   Profile's Player Profile card) with identity/interest tags underneath
-  (e.g. "Gunpla, Gamer, Hiker, Traveller"), then a description paragraph
-  below it.
-- **Right** — a photo/video gallery, stretched to match the combined
-  height of the two cards on the left. Paste an image URL, upload a
-  file, or paste a YouTube link and it's auto-detected as a video embed.
-  Shown a few at a time with Prev/Next paging, fewer per page on small screens.
+  (e.g. "Gunpla, Gamer, Hiker, Traveller"), then a photo/video gallery
+  below it — paste an image URL, upload a file, or paste a YouTube link
+  and it's auto-detected as a video embed. Shown a few at a time with
+  Prev/Next paging, fewer per page on small screens.
+- **Right** — a description paragraph about you, stretched to match the
+  combined height of the two cards on the left.
 
 All three are edited from the **About Me page** card on Profile.
 If you had content saved under the old Hobbies/Games/Free-time fields

@@ -60,7 +60,7 @@ export default function AboutMePage({ aboutMe, profileImage }) {
 
       <section className="px-5 sm:px-8 md:px-10 py-6 md:py-10 max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-6 items-stretch">
-          {/* Left — photo + tags, stacked above description */}
+          {/* Left — photo + tags, stacked above the gallery */}
           <div className="flex flex-col gap-6">
             <div className="rounded-lg p-6 bg-panel border border-line">
               <div className="w-32 sm:w-36 aspect-square rounded-full overflow-hidden bg-raised border border-lineb mx-auto">
@@ -82,32 +82,34 @@ export default function AboutMePage({ aboutMe, profileImage }) {
             </div>
 
             <div className="rounded-lg p-6 bg-panel border border-line">
-              <div className="font-mono font-semibold text-sm mb-4 text-cyan">Description</div>
+              <div className="font-mono font-semibold text-sm mb-4 text-cyan flex items-center gap-2">
+                <Youtube size={14} className="text-txf" /> Photos & videos
+              </div>
+              {media.length === 0 ? (
+                <div className="text-center py-10 rounded border border-dashed border-lineb text-txd font-mono text-xs">
+                  Nothing uploaded yet.
+                </div>
+              ) : (
+                <div>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {pageItems.map((item) => (
+                      <MediaTile key={item.id} item={item} />
+                    ))}
+                  </div>
+                  <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right — description, matched to the combined height of the two cards on the left */}
+          <div className="rounded-lg p-6 bg-panel border border-line h-full flex flex-col">
+            <div className="font-mono font-semibold text-sm mb-4 text-cyan">Description</div>
+            <div className="flex-1 flex flex-col justify-center">
               <p className="text-sm sm:text-base text-txd whitespace-pre-wrap">
                 {description || "Nothing written yet."}
               </p>
             </div>
-          </div>
-
-          {/* Right — media gallery, matched to the combined height of the two cards on the left */}
-          <div className="rounded-lg p-6 bg-panel border border-line h-full flex flex-col">
-            <div className="font-mono font-semibold text-sm mb-4 text-cyan flex items-center gap-2">
-              <Youtube size={14} className="text-txf" /> Photos & videos
-            </div>
-            {media.length === 0 ? (
-              <div className="flex-1 flex items-center justify-center text-center py-10 rounded border border-dashed border-lineb text-txd font-mono text-xs">
-                Nothing uploaded yet.
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col justify-center">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {pageItems.map((item) => (
-                    <MediaTile key={item.id} item={item} />
-                  ))}
-                </div>
-                <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-              </div>
-            )}
           </div>
         </div>
       </section>
