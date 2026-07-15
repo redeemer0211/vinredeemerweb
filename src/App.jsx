@@ -123,6 +123,8 @@ export default function App() {
               setStickers={setStickers}
               aboutMe={aboutMe}
               setAboutMe={setAboutMe}
+              videos={videos}
+              setVideos={setVideos}
               customPages={customPages}
               onNewPage={() => setNewPageOpen(true)}
               onDeleteCustomPage={deleteCustomPage}
@@ -143,7 +145,6 @@ export default function App() {
             <VideosPage
               title={activeCustomPage.label}
               showChannelLink={false}
-              showSync={false}
               showGenreFilter={false}
               videos={customData[activeCustomPage.id] || []}
               setVideos={setCustomItems(activeCustomPage.id)}

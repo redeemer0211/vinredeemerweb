@@ -6,6 +6,7 @@ import {
 import Btn from "./Btn.jsx";
 import Field, { inputClass } from "./Field.jsx";
 import StickerSheet from "./StickerSheet.jsx";
+import YouTubeSync from "./YouTubeSync.jsx";
 import { safeHref, safeImageSrc } from "../lib/sanitize.js";
 import { parseYouTubeId } from "../lib/youtube.js";
 import { normalizeAboutMe } from "../lib/aboutMe.js";
@@ -364,7 +365,7 @@ function PagesCard({ customPages, onNewPage, onDeleteCustomPage }) {
 
 export default function ProfilePage({
   profile, setProfile, profileImage, setProfileImage, heroDesc, setHeroDesc,
-  stickers, setStickers, aboutMe, setAboutMe,
+  stickers, setStickers, aboutMe, setAboutMe, videos, setVideos,
   customPages, onNewPage, onDeleteCustomPage, authed,
 }) {
   return (
@@ -392,6 +393,12 @@ export default function ProfilePage({
         <div className="mb-6">
           <AboutMePageCard aboutMe={aboutMe} setAboutMe={setAboutMe} authed={authed} />
         </div>
+
+        {authed && (
+          <div className="mb-6">
+            <YouTubeSync videos={videos} setVideos={setVideos} />
+          </div>
+        )}
 
         {authed && (
           <PagesCard customPages={customPages} onNewPage={onNewPage} onDeleteCustomPage={onDeleteCustomPage} />

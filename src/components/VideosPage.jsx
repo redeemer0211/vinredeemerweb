@@ -8,7 +8,6 @@ import { parseYouTubeId } from "../lib/youtube.js";
 import { safeHref } from "../lib/sanitize.js";
 import { matchesGenre } from "../lib/genres.js";
 import { useResponsiveValue } from "../lib/useViewport.js";
-import YouTubeSync from "./YouTubeSync.jsx";
 
 const DEFAULT_CHANNEL_URL = "https://www.youtube.com/@vin_redeemer"; // ← edit to your channel
 
@@ -22,7 +21,6 @@ export default function VideosPage({
   emptyText = 'No videos yet. Hit "+ Add video" to post your first one.',
   channelUrl = DEFAULT_CHANNEL_URL,
   showChannelLink = true,
-  showSync = true,
   games = [],
   showGenreFilter = true,
 }) {
@@ -149,7 +147,6 @@ export default function VideosPage({
       </header>
 
       <section className="px-5 sm:px-8 md:px-10 py-6 md:py-8">
-        {authed && showSync && <YouTubeSync videos={videos} setVideos={setVideos} />}
         {authed && formOpen && (
           <form onSubmit={handleSubmit} className="rounded-lg p-6 mb-9 bg-panel border border-line">
             <div className="font-mono font-semibold text-sm mb-4 text-cyan">{editingId ? "Edit video" : "New video"}</div>

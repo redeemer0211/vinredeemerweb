@@ -80,11 +80,11 @@ src/
     LoginModal.jsx            admin sign-in, opened from the navbar's Login button
     NewPageModal.jsx           "New page" form, opened from Profile's Pages card
     GamesPage.jsx               game cards — tags/genres, filter bar, click through to videos
-    VideosPage.jsx               video cards — own tags + inherited game tags, genre filter, YouTube sync
+    VideosPage.jsx               video cards — own tags + inherited game tags, genre filter
     GenreFilterBar.jsx            Any/Soulslike/FPS/RPG filter pills, shared by Games + Videos
-    YouTubeSync.jsx               admin panel that pulls your uploads playlist into Videos
+    YouTubeSync.jsx               admin panel (lives on Profile) that pulls your uploads playlist into Videos
     GenericCardsPage.jsx          reusable card grid — powers Merch + custom "Cards" pages
-    ProfilePage.jsx                Player Profile / Sticker sheet / Socials cards, About Me page editor, Pages
+    ProfilePage.jsx                Player Profile / Sticker sheet / Socials cards, About Me page editor, YouTube sync, Pages
     AboutMePage.jsx                 public About page: hobbies, games, free time
     StickerSheet.jsx                embeddable sticker grid used inside Profile
     Pagination.jsx                   shared Prev/Next pager (Videos + Sticker sheet)
@@ -150,14 +150,13 @@ whatever's set here — neither has edit controls of its own.
 ## About page
 
 A public page (`About` in the nav) laid out in two equal-width columns:
-- **Left** — two stacked cards: your circular photo (same one set on
-  Profile's Player Profile card) with identity/interest tags underneath
-  (e.g. "Gunpla, Gamer, Hiker, Traveller"), then a photo/video gallery
+- **Left** — a Description card with your circular photo (same one set
+  on Profile's Player Profile card) inside it, on the left side of the box.
+- **Right** — two stacked cards: a Tags box on top (identity/interest
+  tags like "Gunpla, Gamer, Hiker, Traveller") and a photo/video gallery
   below it — paste an image URL, upload a file, or paste a YouTube link
   and it's auto-detected as a video embed. Shown a few at a time with
   Prev/Next paging, fewer per page on small screens.
-- **Right** — a description paragraph about you, stretched to match the
-  combined height of the two cards on the left.
 
 All three are edited from the **About Me page** card on Profile.
 If you had content saved under the old Hobbies/Games/Free-time fields
@@ -208,7 +207,7 @@ game tag (from the Games page) or by genre resets back to page 1.
 
 ## Pulling your videos from YouTube
 
-On the Videos page, signed in, open **"Sync from YouTube"**. You'll need:
+On the **Profile page**, signed in, open **"Sync from YouTube"** (it lives there now, not on Videos, alongside the other admin-only tools). You'll need:
 - A **YouTube Data API v3 key** — Google Cloud Console → APIs & Services →
   Credentials → Create Credentials → API key, with "YouTube Data API v3"
   enabled on that project. Free, no credit card. Restrict the key by HTTP

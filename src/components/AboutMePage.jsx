@@ -60,20 +60,33 @@ export default function AboutMePage({ aboutMe, profileImage }) {
 
       <section className="px-5 sm:px-8 md:px-10 py-6 md:py-10 max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-6 items-stretch">
-          {/* Left — photo + tags, stacked above the gallery */}
-          <div className="flex flex-col gap-6">
-            <div className="rounded-lg p-6 bg-panel border border-line">
-              <div className="w-32 sm:w-36 aspect-square rounded-full overflow-hidden bg-raised border border-lineb mx-auto">
+          {/* Left — description box, with the photo inside it on the left side */}
+          <div className="rounded-lg p-6 bg-panel border border-line h-full flex flex-col">
+            <div className="font-mono font-semibold text-sm mb-4 text-cyan">Description</div>
+            <div className="flex-1 flex flex-col sm:flex-row items-center sm:items-start gap-6 justify-center">
+              <div className="w-28 sm:w-32 aspect-square rounded-full overflow-hidden bg-raised border border-lineb shrink-0">
                 {cleanImage ? (
                   <img src={cleanImage} alt="Vin Redeemer" className="w-full h-full object-cover" onContextMenu={(e) => e.preventDefault()} />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-dim/30 to-mag-dim/30">
-                    <User size={32} className="text-txf" />
+                    <User size={28} className="text-txf" />
                   </div>
                 )}
               </div>
-              {tags.length > 0 && (
-                <div className="flex flex-wrap justify-center gap-2 mt-5">
+              <p className="text-sm sm:text-base text-txd whitespace-pre-wrap flex-1">
+                {description || "Nothing written yet."}
+              </p>
+            </div>
+          </div>
+
+          {/* Right — tags on top, gallery below */}
+          <div className="flex flex-col gap-6">
+            <div className="rounded-lg p-6 bg-panel border border-line">
+              <div className="font-mono font-semibold text-sm mb-4 text-cyan">Tags</div>
+              {tags.length === 0 ? (
+                <p className="font-mono text-xs text-txf">Nothing listed yet.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
                   {tags.map((t) => (
                     <span key={t} className="font-mono text-xs px-3 py-1.5 rounded-full border border-cyan-dim text-cyan">{t}</span>
                   ))}
@@ -99,16 +112,6 @@ export default function AboutMePage({ aboutMe, profileImage }) {
                   <Pagination page={page} totalPages={totalPages} onChange={setPage} />
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Right — description, matched to the combined height of the two cards on the left */}
-          <div className="rounded-lg p-6 bg-panel border border-line h-full flex flex-col">
-            <div className="font-mono font-semibold text-sm mb-4 text-cyan">Description</div>
-            <div className="flex-1 flex flex-col justify-center">
-              <p className="text-sm sm:text-base text-txd whitespace-pre-wrap">
-                {description || "Nothing written yet."}
-              </p>
             </div>
           </div>
         </div>
