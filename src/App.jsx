@@ -78,7 +78,7 @@ export default function App() {
   const activeCustomPage = customPages.find((p) => p.id === page);
 
   return (
-    <div className="min-h-screen w-full">
+    <div className="app-shell w-full flex flex-col">
       <Navbar
         page={page}
         setPage={goto}
@@ -88,74 +88,76 @@ export default function App() {
         customPages={customPages}
       />
 
-      {page === "home" && (
-        <Hero setPage={goto} profileImage={profileImage} heroDesc={heroDesc} profile={profile} />
-      )}
-      {page !== "home" && (
-        <div className="screen-fit flex flex-col">
-          {page === "games" && (
-            <GamesPage games={games} setGames={setGames} gotoVideosForTag={gotoVideosForTag} authed={authed} />
-          )}
-          {page === "videos" && (
-            <VideosPage videos={videos} setVideos={setVideos} activeTag={activeTag} clearTag={() => setActiveTag(null)} authed={authed} games={games} />
-          )}
-          {page === "merch" && (
-            <GenericCardsPage
-              eyebrow="// Shop"
-              title="Merchandise"
-              subtitle="Everything here is a placeholder until you add the real stuff."
-              emptyText='No merch yet. Hit "+ Add item" to list your first piece.'
-              items={merch}
-              setItems={setMerch}
-              authed={authed}
-              badge="BETA"
-            />
-          )}
-          {page === "about" && <AboutMePage aboutMe={aboutMe} profileImage={profileImage} />}
-          {page === "profile" && (
-            <ProfilePage
-              profile={profile}
-              setProfile={setProfile}
-              profileImage={profileImage}
-              setProfileImage={setProfileImage}
-              heroDesc={heroDesc}
-              setHeroDesc={setHeroDesc}
-              stickers={stickers}
-              setStickers={setStickers}
-              aboutMe={aboutMe}
-              setAboutMe={setAboutMe}
-              videos={videos}
-              setVideos={setVideos}
-              customPages={customPages}
-              onNewPage={() => setNewPageOpen(true)}
-              onDeleteCustomPage={deleteCustomPage}
-              authed={authed}
-            />
-          )}
+      <main className="flex-1 flex flex-col">
+        {page === "home" && (
+          <Hero setPage={goto} profileImage={profileImage} heroDesc={heroDesc} profile={profile} />
+        )}
+        {page !== "home" && (
+          <div className="flex-1 flex flex-col">
+            {page === "games" && (
+              <GamesPage games={games} setGames={setGames} gotoVideosForTag={gotoVideosForTag} authed={authed} />
+            )}
+            {page === "videos" && (
+              <VideosPage videos={videos} setVideos={setVideos} activeTag={activeTag} clearTag={() => setActiveTag(null)} authed={authed} games={games} />
+            )}
+            {page === "merch" && (
+              <GenericCardsPage
+                eyebrow="// Shop"
+                title="Merchandise"
+                subtitle="Everything here is a placeholder until you add the real stuff."
+                emptyText='No merch yet. Hit "+ Add item" to list your first piece.'
+                items={merch}
+                setItems={setMerch}
+                authed={authed}
+                badge="BETA"
+              />
+            )}
+            {page === "about" && <AboutMePage aboutMe={aboutMe} profileImage={profileImage} />}
+            {page === "profile" && (
+              <ProfilePage
+                profile={profile}
+                setProfile={setProfile}
+                profileImage={profileImage}
+                setProfileImage={setProfileImage}
+                heroDesc={heroDesc}
+                setHeroDesc={setHeroDesc}
+                stickers={stickers}
+                setStickers={setStickers}
+                aboutMe={aboutMe}
+                setAboutMe={setAboutMe}
+                videos={videos}
+                setVideos={setVideos}
+                customPages={customPages}
+                onNewPage={() => setNewPageOpen(true)}
+                onDeleteCustomPage={deleteCustomPage}
+                authed={authed}
+              />
+            )}
 
-          {activeCustomPage && activeCustomPage.template === "cards" && (
-            <GenericCardsPage
-              eyebrow="// Custom page"
-              title={activeCustomPage.label}
-              items={customData[activeCustomPage.id] || []}
-              setItems={setCustomItems(activeCustomPage.id)}
-              authed={authed}
-            />
-          )}
-          {activeCustomPage && activeCustomPage.template === "videos" && (
-            <VideosPage
-              title={activeCustomPage.label}
-              showChannelLink={false}
-              showGenreFilter={false}
-              videos={customData[activeCustomPage.id] || []}
-              setVideos={setCustomItems(activeCustomPage.id)}
-              activeTag={null}
-              clearTag={() => {}}
-              authed={authed}
-            />
-          )}
-        </div>
-      )}
+            {activeCustomPage && activeCustomPage.template === "cards" && (
+              <GenericCardsPage
+                eyebrow="// Custom page"
+                title={activeCustomPage.label}
+                items={customData[activeCustomPage.id] || []}
+                setItems={setCustomItems(activeCustomPage.id)}
+                authed={authed}
+              />
+            )}
+            {activeCustomPage && activeCustomPage.template === "videos" && (
+              <VideosPage
+                title={activeCustomPage.label}
+                showChannelLink={false}
+                showGenreFilter={false}
+                videos={customData[activeCustomPage.id] || []}
+                setVideos={setCustomItems(activeCustomPage.id)}
+                activeTag={null}
+                clearTag={() => {}}
+                authed={authed}
+              />
+            )}
+          </div>
+        )}
+      </main>
 
       <Footer profile={profile} authed={authed} />
 

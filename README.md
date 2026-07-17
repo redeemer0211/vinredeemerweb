@@ -13,15 +13,19 @@ cards. Everyone else just sees your content, read-only.
 
 Every page now adapts its spacing, grid density, and (for paginated
 pages) how much it shows per page based on device size:
-- **Hero** fills exactly one screen's height below the navbar
-  (`.screen-fit` in `src/index.css`, using `100dvh` so mobile browser
-  chrome doesn't cause a false gap), so the landing view reads as a
-  single screen rather than the top of a long scroll.
-- **Other pages** get the same `.screen-fit` treatment as a minimum
-  height, so a page with little content (an empty Merch or About page)
-  still fills the screen instead of leaving the footer stranded near the
-  top — but content that's actually long will still push past one screen,
-  on purpose (see below).
+- **The whole app is one sticky-footer flex layout** (`App.jsx`: a
+  `.app-shell` root using `100dvh` — see `src/index.css` — with Navbar,
+  a `flex-1` main content area, and Footer). When a page's content is
+  short, `flex-1` stretches it to fill the leftover space so the footer
+  sits right at the bottom of the screen, no extra scroll needed to
+  reach it. When content is genuinely long, it just overflows past one
+  screen normally and the whole page scrolls, footer included — this is
+  deliberately not forced to stay pinned, since content and footer both
+  need to actually be reachable by scrolling once there's enough of it.
+  (Earlier this used a per-page `min-height` that didn't account for the
+  footer's own height, which could push the footer below the fold even
+  on short pages — this flexbox approach doesn't have that problem,
+  because it sizes against the *real* remaining space, not a guess.)
 - **Videos and the Sticker sheet** use an adaptive page size
   (`useResponsiveValue` in `src/lib/useViewport.js`): fewer cards per
   page on a phone (4 videos / 6 stickers), more on tablet, full-size on

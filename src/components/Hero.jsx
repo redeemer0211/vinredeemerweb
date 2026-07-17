@@ -11,7 +11,7 @@ export default function Hero({ setPage, profileImage, heroDesc, profile }) {
   ].filter((s) => safeHref(s.url));
 
   return (
-    <section className="screen-fit relative overflow-hidden flex items-center px-5 sm:px-8 md:px-10 py-8 sm:py-12 md:py-16 border-b border-line">
+    <section className="flex-1 relative overflow-hidden flex items-center px-5 sm:px-8 md:px-10 py-8 sm:py-12 md:py-16 border-b border-line">
       <div className="scanlines" />
 
       <div className="w-full grid md:grid-cols-2 gap-8 md:gap-12 items-center">
