@@ -76,6 +76,7 @@ src/
   index.css              Tailwind directives + a few custom effect classes
   components/
     Navbar.jsx              centered nav: logo left, pages centered, admin controls right
+    Footer.jsx               contact email, follow icons, Like toggle, copyright/status line
     Hero.jsx                 read-only "about me" section + social icons — all edited on Profile
     LoginModal.jsx            admin sign-in, opened from the navbar's Login button
     NewPageModal.jsx           "New page" form, opened from Profile's Pages card
@@ -224,6 +225,36 @@ from your own session — it's never part of the site's public code.
 Unlike the chat preview, this version **persists your games, videos,
 profile photo, and everything else in the browser's local storage**,
 since it's a real app running in a real browser, not a sandboxed artifact.
+
+## Footer — contact, follow, and Like
+
+The footer now has three rows: Like and Follow side by side, your
+contact email below that, and the copyright/status line.
+
+- **Contact** — a `mailto:` link built from `profile.contactEmail`,
+  editable in the **Socials** card on Profile (defaults to
+  `redeemer0211@gmail.com`).
+- **Follow** — a button next to Like; clicking it pops open your
+  YouTube/TikTok/Facebook icons (pulled from the same Socials card data
+  used elsewhere), rather than showing them inline all the time. Only
+  appears if you've actually filled in at least one platform.
+- **Like** — a heart toggle, and I want to be upfront about what it
+  actually is: **it's per-visitor, not a shared public count.** It's
+  stored in that browser's `localStorage` (`src/components/Footer.jsx`),
+  so it remembers whether *that visitor* liked the site, but there's no
+  number anywhere claiming "142 people liked this" — because that would
+  require a backend or database to tally likes across everyone who
+  visits, which a static site doesn't have. I didn't fake a number here;
+  a real shared count only comes from a real shared store.
+
+  If you want a genuine cross-visitor like/view count later, the
+  practical options are: (1) a small backend of your own (even a single
+  serverless function backed by a KV store), or (2) a third-party
+  counter service — CounterAPI (counterapi.dev) is a reasonable one, but
+  it now requires a free account and a workspace, it's no longer the
+  zero-setup API it once was, so I didn't wire it in without you
+  choosing to sign up for it first. Happy to integrate it if you set up
+  an account and hand me the workspace/counter name.
 
 ## Changing your login
 

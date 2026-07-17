@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import {
-  Pencil, Check, X as XIcon, Youtube, Music2, Facebook, Plus,
+  Pencil, Check, X as XIcon, Youtube, Music2, Facebook, Plus, Mail,
   Camera, User, LayoutGrid, ExternalLink,
 } from "lucide-react";
 import Btn from "./Btn.jsx";
@@ -116,6 +116,18 @@ function SocialsCard({ profile, setProfile, authed }) {
 
       {editing ? (
         <div className="flex-1 flex flex-col gap-4">
+          <div>
+            <label className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide text-txd mb-1.5">
+              <Mail size={12} /> Contact email
+            </label>
+            <input
+              className={`${inputClass} !py-2 !text-sm`}
+              type="email"
+              value={draft.contactEmail || ""}
+              onChange={(e) => setDraft({ ...draft, contactEmail: e.target.value })}
+              placeholder="you@example.com"
+            />
+          </div>
           {SOCIAL_PLATFORMS.map((p) => (
             <div key={p.key}>
               <label className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide text-txd mb-1.5">
@@ -140,12 +152,18 @@ function SocialsCard({ profile, setProfile, authed }) {
             <Btn variant="ghost" className="!px-3 !py-2 !text-[11px]" onClick={() => setEditing(false)}><XIcon size={13} /> Cancel</Btn>
           </div>
         </div>
-      ) : activePlatforms.length === 0 ? (
+      ) : activePlatforms.length === 0 && !profile.contactEmail ? (
         <div className="flex-1 flex items-center justify-center text-center py-8 rounded border border-dashed border-lineb text-txd font-mono text-xs">
           {authed ? 'No socials yet — click the pencil to add them.' : 'Nothing here yet.'}
         </div>
       ) : (
         <div className="flex-1 flex flex-col gap-3">
+          {profile.contactEmail && (
+            <div className="flex items-center gap-2.5 px-4 py-3 rounded bg-raised border border-line">
+              <Mail size={15} className="text-txd" />
+              <div className="font-mono text-xs truncate">{profile.contactEmail}</div>
+            </div>
+          )}
           {activePlatforms.map((p) => (
             <div key={p.key} className="flex items-center justify-between px-4 py-3 rounded bg-raised border border-line">
               <div className="flex items-center gap-2.5">

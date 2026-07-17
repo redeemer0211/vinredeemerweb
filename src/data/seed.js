@@ -65,6 +65,7 @@ export const defaultProfile = {
   tiktokFollowers: "",
   facebook: "",
   facebookFollowers: "",
+  contactEmail: "redeemer0211@gmail.com",
 };
 
 export const defaultHeroDesc =

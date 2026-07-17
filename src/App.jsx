@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar.jsx";
+import Footer from "./components/Footer.jsx";
 import Hero from "./components/Hero.jsx";
 import GamesPage from "./components/GamesPage.jsx";
 import VideosPage from "./components/VideosPage.jsx";
@@ -156,10 +157,7 @@ export default function App() {
         </div>
       )}
 
-      <footer className="px-5 sm:px-8 md:px-10 py-5 md:py-8 flex justify-between flex-wrap gap-3 font-mono text-xs text-txf border-t border-line">
-        <span>© {new Date().getFullYear()} Vin Redeemer</span>
-        <span>{authed ? "Signed in as admin" : "Public view"}</span>
-      </footer>
+      <Footer profile={profile} authed={authed} />
 
       {loginOpen && (
         <LoginModal onClose={() => setLoginOpen(false)} onSuccess={() => { setAuthed(true); setLoginOpen(false); }} />
